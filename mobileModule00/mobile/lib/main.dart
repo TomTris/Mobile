@@ -46,7 +46,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ContextModel cm = ContextModel();
       return (exp.evaluate(EvaluationType.REAL, cm));
     } catch (e) {
-      print("Error evaluating expression: $e");
+      // print("Error evaluating expression: $e");
       return double.nan;
     }
   }
@@ -54,8 +54,8 @@ class _MyHomePageState extends State<MyHomePage> {
   void screenDisplay(String str) {
       setState(() {
         if (str == 'C') {
-          if (stringScreen != "")
-            stringScreen = stringScreen.substring(0, stringScreen.length - 1); }
+          if (stringScreen != "") {
+            stringScreen = stringScreen.substring(0, stringScreen.length - 1); }}
         else if (str == 'AC') {
           stringScreen = ""; }
         else if (str == '=')

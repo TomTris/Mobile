@@ -91,7 +91,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
             WidgetScreen(appbarHeight: appbarHeight, stringScreen: stringScreen, result: result),
             WidgetKeyboard(appbarHeight: appbarHeight, screenDisplay: screenDisplay),

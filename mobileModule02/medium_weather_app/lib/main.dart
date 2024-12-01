@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:async';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const MyApp());
@@ -34,14 +35,11 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   TextEditingController        _searchController = TextEditingController();
-  FloatingActionButtonLocation _floatingButton = FloatingActionButtonLocation.centerFloat;
-  String                       _textCurrentlyView = "Currently";
-  String                       _textTodayView = "Today";
-  String                       _textWeeklyView = "Weekly";
-
-  String                      _toDisplay = "Press button on the right top to check location";
-  late LocationPermission       permission;
-  Position?                      position;
+  String                       _toDisplay = "Press button on the right top to check location";
+  late LocationPermission      permission;
+  Position?                    position;
+  Timer?                       _debounce;
+  List<String> _citySuggestions = [];
 
   Future<void> _getCurrentLocation() async
   {
@@ -69,25 +67,45 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
 
-    // ${position.latitude} ${position.longitude}
     position = await Geolocator.getCurrentPosition();
     _toDisplay = "${position?.latitude} ${position?.longitude}";
 
     setState(() {
-      _textCurrentlyView = "Currently" ;
-      _textTodayView = "Today";
-      _textWeeklyView = "Weekly";
       _searchController.clear();
     });
   }
 
-
   void searchInput() {
     setState(() {
-      _textCurrentlyView = "Currently\n" + _searchController.value.text;
-      _textTodayView = "Today\n" + _searchController.value.text;
-      _textWeeklyView = "Weekly\n" + _searchController.value.text;
       _searchController.clear();
+    });
+  }
+
+  Future<void> _updateSuggestions(String string) async {
+    String url = "https://geocoding-api.open-meteo.com/v1/search?name=$string&count=10&language=en&format=json";
+    final response = await http.get(Uri.parse(url));
+    var data;
+
+    if (response.statusCode != 200) {
+      setState(() {
+        _toDisplay = response.body;
+      });
+      return ;
+    }
+    data = json.decode(response.body)['results'];
+    _citySuggestions = [];
+    if (data != null) {
+      for (var each in data) {
+        _citySuggestions.add(
+            (each['name'] ?? "??Name") + ", " 
+          + (each['country_code'] ?? "??Country Code") + ", " 
+          + (each['admin1'] ?? each['admin2'] ?? "??admin") + ", " 
+          + (each['country'] ?? "??Country")
+        );
+      }
+    }
+    setState(() {
+      _citySuggestions = _citySuggestions;
     });
   }
 
@@ -96,46 +114,71 @@ class _MyHomePageState extends State<MyHomePage> {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        appBar: AppBar(
-          title: TextField(
-            controller: _searchController,
-            decoration: InputDecoration(
-              hintText: "Search Information",
-              icon: Icon(Icons.search),
-            ),
-            onSubmitted: (value) => {searchInput()},
+        body: Stack(children: [
+          TabBarView(
+            children: [
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center, // Center vertically
+                crossAxisAlignment: CrossAxisAlignment.center, // horizental
+                children: [
+                  Text("Currently", style: TextStyle(fontSize: 24)),
+                  Text("$_toDisplay", style: TextStyle(fontSize: 24)),
+                ],
+              ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center, // Center vertically
+                crossAxisAlignment: CrossAxisAlignment.center, // horizental
+                children: [
+                  Text("Today", style: TextStyle(fontSize: 24)),
+                  Text("$_toDisplay", style: TextStyle(fontSize: 24)),
+                ],
+              ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center, // Center vertically
+                crossAxisAlignment: CrossAxisAlignment.center, // horizental
+                children: [
+                  Text("Weekly", style: TextStyle(fontSize: 24)),
+                  Text("$_toDisplay", style: TextStyle(fontSize: 24)),
+                ],
+              ),
+            ],
           ),
-          backgroundColor: Colors.blueGrey,
-          actions: [IconButton(onPressed: _getCurrentLocation, icon: Icon(Icons.location_on)),],
-        ),
-        body: TabBarView(
-          children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center, // Center vertically
-              crossAxisAlignment: CrossAxisAlignment.center, // horizental
-              children: [
-                Text("$_textCurrentlyView", style: TextStyle(fontSize: 24)),
-                Text("$_toDisplay", style: TextStyle(fontSize: 24)),
-              ],
+          Column(
+            children: [
+            AppBar(
+              title:  TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: "Search Information",
+                ),
+                onSubmitted: (value) => {searchInput()},
+                onChanged: (value) {
+                  if (_debounce != null && _debounce?.isActive == true)
+                    _debounce?.cancel();
+                  _debounce = Timer(Duration(milliseconds: 500), () {
+                    _updateSuggestions(value);
+                  });
+                },
+              ),
+              actions: [IconButton(onPressed: _getCurrentLocation, icon: Icon(Icons.location_on)),],
+              backgroundColor: Colors.blueGrey,
             ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center, // Center vertically
-              crossAxisAlignment: CrossAxisAlignment.center, // horizental
-              children: [
-                Text("$_textTodayView", style: TextStyle(fontSize: 24)),
-                Text("$_toDisplay", style: TextStyle(fontSize: 24)),
-              ],
-            ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center, // Center vertically
-              crossAxisAlignment: CrossAxisAlignment.center, // horizental
-              children: [
-                Text("$_textWeeklyView", style: TextStyle(fontSize: 24)),
-                Text("$_toDisplay", style: TextStyle(fontSize: 24)),
-              ],
-            ),
-          ],
-        ),
+            if (_citySuggestions.isNotEmpty)
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _citySuggestions.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      title: Text(_citySuggestions[index]),
+                      onTap: () {
+                        _searchController.text = _citySuggestions[index];
+                      },
+                    );
+                  },
+                ),
+              )
+          ],)
+        ],),
         bottomNavigationBar: TabBar(
           tabs: [
             Tab(icon: Icon(Icons.access_time), text: 'Currently'),

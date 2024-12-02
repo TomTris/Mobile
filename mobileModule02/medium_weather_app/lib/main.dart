@@ -3,6 +3,9 @@ import 'package:geolocator/geolocator.dart';
 import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
+import 'package:medium_weather_app/functions.dart';
+import 'package:medium_weather_app/pages.dart';
+import 'package:medium_weather_app/myAppBar.dart';
 
 void main() {
   runApp(const MyApp());
@@ -34,211 +37,175 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  TextEditingController        _searchController = TextEditingController();
-  String                       _toDisplay = "Press button on the right top to check location";
+  TextEditingController        searchController = TextEditingController();
+  String                       toDisplay = "Press button on the right top to check location";
   late LocationPermission      permission;
   Position?                    position;
-  Timer?                       _debounce;
-  Map<int, List<String>>      _cityLanLon = {};
-  List<String>                _citySuggestions = [];
-  List<String>                _toDisplayCurrent = [];
-  List<String>                _toDisplayToday = [];
-  List<String>                _toDisplayWeek = [];
+  Timer?                       debounce;
+  Map<int, List<String>>      cityLanLon = {};
+  List<String>                citySuggestions = [];
+  List<String>                toDisplayCurrent = [];
+  List<String>                toDisplayToday = [];
+  List<String>                toDisplayWeek = [];
 
-  Map<int, String> weatherDescription = {
-    0: "Clear sky",
-    1: "Mainly clear",
-    2: "Partly cloudy",
-    3: "Overcast",
-    45: "Fog",
-    48: "Depositing rime fog",
-    51: "Light drizzle",
-    53: "Moderate drizzle",
-    55: "Dense drizzle",
-    56: "Light freezing drizzle",
-    57: "Dense freezing drizzle",
-    61: "Light rain",
-    63: "Moderate rain",
-    65: "Heavy rain",
-    66: "Light freezing rain",
-    67: "Heavy freezing rain",
-    71: "Slight snow fall",
-    73: "Moderate snow fall",
-    75: "Heavy snow fall",
-    77: "Snow grains",
-    80: "Slight rain showers",
-    81: "Moderate rain showers",
-    82: "Violent rain showers",
-    85: "Slight snow showers",
-    86: "Heavy snow showers",
-    95: "Slight thunderstorm",
-    96: "Thunderstorm with slight hail",
-    99: "Thunderstorm with heavy hail",
-  };
+  void _emptyDisplay(String str)
+  {
+    toDisplay = str;
+    toDisplayCurrent = [];
+    toDisplayToday = [];
+    toDisplayWeek = [];
+    citySuggestions = [];
+    setState(() {
+    });
+  }
 
-  Future<void> _getCurrentLocation() async
+  // return 0 fails, 1 - success, position_variable is updated and display the address of user.
+  Future<int> getCurrentLocation() async
   {
     if (false == await Geolocator.isLocationServiceEnabled()) {
-      setState(() {
-      _toDisplay = "location services aren't enabled on the device.";
-      return ;
-      });
+      _emptyDisplay("location services aren't enabled on the device.");
+      return (0);
     }
-
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.deniedForever) {
-      setState(() {
-      _toDisplay = "Permission to access the device's location is permanently denied.";
-      return ;
-      });
+      _emptyDisplay("Permission to access the device's location is permanently denied.");
+      return (0);
     }
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        setState(() {
-          _toDisplay = "Permission to access the device's location is denied.";
-          return ;
-        });
+        _emptyDisplay("Permission to access the device's location is denied.");
+        return (0);
       }
     }
     position = await Geolocator.getCurrentPosition();
-    _toDisplay = "${position?.latitude} ${position?.longitude}";
-    print(_toDisplay);
-
-    setState(() {
-      _searchController.clear();
-    });
+    _emptyDisplay("${position?.latitude}, ${position?.longitude}");
+    return (1);
   }
 
-  Future<void> _updateSuggestions(String string) async
+  Future<void> updateSuggestions(String cityName) async
   {
-    String url = "https://geocoding-api.open-meteo.com/v1/search?name=$string&count=10&language=en&format=json";
+    String url     = "https://geocoding-api.open-meteo.com/v1/search?name=$cityName&count=10&language=en&format=json";
     final response = await http.get(Uri.parse(url));
-    int count = 0;
+    int count      = 0;
     var data;
 
     if (response.statusCode != 200) {
-      setState(() {
-        _toDisplay = response.body;
-      });
+        _emptyDisplay(response.body);
       return ;
     }
     data = json.decode(response.body)['results'];
-    _citySuggestions = [];
-    if (_cityLanLon?.isNotEmpty == true)
-      _cityLanLon.clear();
+    citySuggestions = [];
+    if (cityLanLon.isNotEmpty == true)
+      cityLanLon.clear();
     if (data != null) {
       for (var each in data) {
-        _citySuggestions.add(
+        citySuggestions.add(
             (each['name'] ?? "??Name") + ", " 
           + (each['country_code'] ?? "??Country Code") + ", " 
           + (each['admin1'] ?? each['admin2'] ?? "??admin") + ", " 
           + (each['country'] ?? "??Country")
         );
-        _cityLanLon[count++] = ["${each['latitude']}", "${each['longitude']}"];
+        cityLanLon[count++] = ["${each['latitude']}", "${each['longitude']}"];
       }
     }
     setState(() {
-      _citySuggestions = _citySuggestions;
     });
   }
 
-  void searchInput(int index) async
+  Future<String?> displayPageCurrent(int index) async
   {
-    print("bbbb");
-    if (index == -1 && _citySuggestions.isEmpty)
-    {
-      setState(() {
-        _searchController.clear();
-        _updateSuggestions("");
-      });
-      return;
-    }
-    else if (index == -1)
-      index = 0;
-    print("aaaaa");
-    String url1 = "https://api.open-meteo.com/v1/forecast?latitude=${_cityLanLon[index]?[0]}&longitude=${_cityLanLon[index]?[1]}&current=temperature_2m,weather_code,wind_speed_10m";
-    String url2 = "https://api.open-meteo.com/v1/forecast?latitude=${_cityLanLon[index]?[0]}&longitude=${_cityLanLon[index]?[1]}&hourly=temperature_2m,weather_code,wind_speed_10m";
-    late String today;
+    String url1 = "https://api.open-meteo.com/v1/forecast?latitude=${cityLanLon[index]?[0]}&longitude=${cityLanLon[index]?[1]}&current=temperature_2m,weather_code,wind_speed_10m";
+    late String? today;
     var response;
     var data;
 
     response = await http.get(Uri.parse(url1));
     if (response.statusCode != 200) {
-      setState(() {
-        print(response.body);
-        _toDisplay = response.body;
-      });
-      return ;
+      _emptyDisplay(response.body);
+      return (null);
     }
     data = json.decode(response.body)['current'];
     today = data['time'].substring(0, 10);
-    _toDisplayCurrent = [
-      '${_citySuggestions[index]}',
+    toDisplayCurrent = [
+      '${citySuggestions[index]}',
       "Temperatur: ${data['temperature_2m']} °C",
-      "Weather: ${weatherDescription[data['weather_code']]}",
+      "Weather: ${getWeatherDescription(data['weather_code'])}",
       "Wind Speed: ${data['wind_speed_10m']} km/h"];
+    return (today);
+  }
 
+  Future<void> displayTodayAndWeek(int index, String today) async
+  {
+    String url2 = "https://api.open-meteo.com/v1/forecast?latitude=${cityLanLon[index]?[0]}&longitude=${cityLanLon[index]?[1]}&hourly=temperature_2m,weather_code,wind_speed_10m";
+    var response;
+    var data;
 
     response = await http.get(Uri.parse(url2));
     if (response.statusCode != 200) {
       setState(() {
-        _toDisplay = response.body;
+        toDisplay = response.body;
       });
       return ;
     }
     data = json.decode(response.body)['hourly'];
-    _toDisplayToday = ['${_citySuggestions[index]}', today, ""];
+    toDisplayToday = ['${citySuggestions[index]}', today, ""];
     for (int cnt = 0; cnt <= 23; cnt++)
     {
-      _toDisplayToday[2] += 
-        "${data['time'][cnt].substring(11)}   " + 
-        "${data['temperature_2m'][cnt]} °C    " +
-        "${weatherDescription[data['weather_code'][cnt]]}   " +
+      toDisplayToday[2] += 
+        "${data['time'][cnt].substring(11)}   " 
+        "${data['temperature_2m'][cnt]} °C    "
+        "${getWeatherDescription(data['weather_code'][cnt])}   "
         "${data['wind_speed_10m'][cnt]} km/h\n";
     }
 
-    _toDisplayWeek = ['${_citySuggestions[index]}', today, ""];
-    for (int cnt_day = 0; cnt_day < 7; cnt_day++)
+    toDisplayWeek = ['${citySuggestions[index]}', today, ""];
+    for (int cntDay = 0; cntDay < 7; cntDay++)
     {
-      double temperature_temporary = double.parse("${data['temperature_2m'][cnt_day * 7]}");
+      double temperature_temporary = double.parse("${data['temperature_2m'][cntDay * 23]}");
       double temMax = temperature_temporary;
       double temMin = temperature_temporary;
-      double winAvarage = data['wind_speed_10m'][cnt_day * 7];
+      double winAvarage = data['wind_speed_10m'][cntDay * 23];
       for (int cnt = 1; cnt <= 23; cnt++)
       {
-        temperature_temporary = double.parse("${data['temperature_2m'][cnt_day * 7 + 1]}");
+        temperature_temporary = double.parse("${data['temperature_2m'][cntDay * 23 + 1]}");
         if (temMax < temperature_temporary)
           temMax = temperature_temporary;
         else if (temMin > temperature_temporary)
           temMin = temperature_temporary;
-        winAvarage += data['wind_speed_10m'][cnt_day * 7 + cnt];
+        winAvarage += data['wind_speed_10m'][cntDay * 23 + cnt];
       }
-      _toDisplayWeek.add(
-        "${data['time'][cnt_day * 7].substring(0, 10)}   " + 
-        "$temMin °C    " +
-        "$temMax °C    " +
-        "${weatherDescription[data['weather_code'][cnt_day * 7 + 12]]}   " +
-        "${(winAvarage / 24).toStringAsFixed(2)} km/h\n"
+      toDisplayWeek.add(
+        "${data['time'][cntDay * 23].substring(0, 10)}   "
+        "$temMin °C    "
+        "$temMax °C    "
+        "${getWeatherDescription(data['weather_code'][cntDay * 23 + 12])}   "
+        "${(winAvarage / 24).toStringAsFixed(2)} km/h"
       );
     }
+  }
 
+  void searchTheInput(int index) async
+  {
+    if (index == -1 && citySuggestions.isEmpty)
+    {
+      setState(() {
+        searchController.clear();
+        updateSuggestions("");
+      });
+      return;
+    }
+    else if (index == -1)
+      index = 0;
 
-    
-    
-//         In your first tab “Current”, you need to display:
-// • The location (city name, countrycode/admin1/admin2, and country).
-// • The current temperature (in Celsius).
-// • The current weather description (e.g., cloudy, sunny, rainy).
-// • The current wind speed (in km/h).
-      //To day
-      // ◦ The time of day.
-      // ◦ The temperature at each hour.
-      // ◦ The weather description (cloudy, sunny, rainy, etc.) at each hour.
-      // ◦ The wind speed (in km/h) at each hour.
+    late String? today;
+    today = await displayPageCurrent(index);
+    if (today == null)
+      return ;
+    await displayTodayAndWeek(index, today);
     setState(() {
-      _searchController.clear();
-      _updateSuggestions("");
+      searchController.clear();
+      updateSuggestions("");
     });
   }
 
@@ -250,98 +217,21 @@ class _MyHomePageState extends State<MyHomePage> {
         body: Stack(children: [
           TabBarView(
             children: [
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center, // Center vertically
-                crossAxisAlignment: CrossAxisAlignment.center, // horizental
-                children: [
-                  if (_toDisplayCurrent.isEmpty)
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center, // Center vertically
-                      crossAxisAlignment: CrossAxisAlignment.center, // horizental
-                      children: [
-                        Text("Currently", style: TextStyle(fontSize: 24)),
-                        Text("Press button on the right top to check location", style: TextStyle(fontSize: 24)),
-                      ]
-                    ),
-                  for (var each in _toDisplayCurrent)
-                    Text("$each", style: TextStyle(fontSize: 24)),
-                ],
-              ),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center, // Center vertically
-                crossAxisAlignment: CrossAxisAlignment.center, // horizental
-                children: [
-                  if (_toDisplayToday.isEmpty)
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center, // Center vertically
-                      crossAxisAlignment: CrossAxisAlignment.center, // horizental
-                      children: [
-                        Text("Today", style: TextStyle(fontSize: 24)),
-                        Text("Press button on the right top to check location", style: TextStyle(fontSize: 24)),
-                      ]
-                    ),
-                  for (var each in _toDisplayToday)
-                    Text("$each", style: TextStyle(fontSize: 24)),
-                ],
-              ),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center, // Center vertically
-                crossAxisAlignment: CrossAxisAlignment.center, // horizental
-                children: [
-                  if (_toDisplayWeek.isEmpty)
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center, // Center vertically
-                      crossAxisAlignment: CrossAxisAlignment.center, // horizental
-                      children: [
-                        Text("Today", style: TextStyle(fontSize: 24)),
-                        Text("Press button on the right top to check location", style: TextStyle(fontSize: 24)),
-                      ]
-                    ),
-                  for (var each in _toDisplayWeek)
-                    Text("$each", style: TextStyle(fontSize: 24)),
-                ],
-              ),
+              CurrentPage(toDisplay: toDisplay, toDisplayCurrent: toDisplayCurrent),
+              TodayPage(toDisplay: toDisplay, toDisplayToday: toDisplayToday),
+              WeekPage(toDisplay: toDisplay, toDisplayWeek: toDisplayWeek),
             ],
           ),
-          Column(
-            children: [
-            AppBar(
-              title:  TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: "Search Information",
-                ),
-                onSubmitted: (value) => {searchInput(-1)},
-                onChanged: (value) {
-                  if (_debounce != null && _debounce?.isActive == true)
-                    {_debounce?.cancel();}
-                  _debounce = Timer(Duration(milliseconds: 500), () {
-                    _updateSuggestions(value);
-                  });
-                },
-              ),
-              actions: [IconButton(onPressed: _getCurrentLocation, icon: Icon(Icons.location_on)),],
-              backgroundColor: Colors.blueGrey,
-            ),
-            if (_citySuggestions.isNotEmpty)
-            Expanded(
-                child: ListView.builder(
-                  itemCount: _citySuggestions.length,
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                      title: Text(_citySuggestions[index]),
-                      onTap: () {
-                        _searchController.text = _citySuggestions[index];
-                        print(index);
-                        searchInput(index);
-                      },
-                    );
-                  },
-                ),
-              )
-          ],)
+          MyAppBar(
+            searchController: searchController,
+            searchTheInput: searchTheInput,
+            updateSuggestions: updateSuggestions,
+            getCurrentLocation: getCurrentLocation,
+            citySuggestions: citySuggestions,
+            debounce: debounce,
+          ),
         ],),
-        bottomNavigationBar: TabBar(
+        bottomNavigationBar: const TabBar(
           tabs: [
             Tab(icon: Icon(Icons.access_time), text: 'Currently'),
             Tab(icon: Icon(Icons.calendar_today), text: 'Today'),

@@ -40,7 +40,7 @@ class _MyAppBarState extends State<MyAppBar> {
           onChanged: (value) {
             if (widget.debounce != null && widget.debounce?.isActive == true)
               {widget.debounce?.cancel();}
-            widget.debounce = Timer(Duration(milliseconds: 500), () {
+            widget.debounce = Timer(Duration(milliseconds: 350), () {
               widget.updateSuggestions(value);
             });
           },

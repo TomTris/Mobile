@@ -90,8 +90,11 @@ class _MyHomePageState extends State<MyHomePage> {
     int count      = 0;
     var data;
 
+    if (searchController.text != cityName) {
+      return ;
+    }
     if (response.statusCode != 200) {
-        _emptyDisplay(response.body);
+      _emptyDisplay("API request has Problem: ${response.body}");
       return ;
     }
     data = json.decode(response.body)['results'];
@@ -122,17 +125,21 @@ class _MyHomePageState extends State<MyHomePage> {
 
     response = await http.get(Uri.parse(url1));
     if (response.statusCode != 200) {
-      _emptyDisplay(response.body);
+      _emptyDisplay("API request has Problem: ${response.body}");
       return (null);
     }
     data = json.decode(response.body)['current'];
-    today = data['time'].substring(0, 10);
-    toDisplayCurrent = [
-      '${citySuggestions[index]}',
-      "Temperatur: ${data['temperature_2m']} °C",
-      "Weather: ${getWeatherDescription(data['weather_code'])}",
-      "Wind Speed: ${data['wind_speed_10m']} km/h"];
-    return (today);
+    if (data != null)
+    {
+      today = data['time'].substring(0, 10);
+      toDisplayCurrent = [
+        '${citySuggestions[index]}',
+        "Temperatur: ${data['temperature_2m']} °C",
+        "Weather: ${getWeatherDescription(data['weather_code'])}",
+        "Wind Speed: ${data['wind_speed_10m']} km/h"];
+      return (today);
+    }
+    return (null);
   }
 
   Future<void> displayTodayAndWeek(int index, String today) async
@@ -143,12 +150,16 @@ class _MyHomePageState extends State<MyHomePage> {
 
     response = await http.get(Uri.parse(url2));
     if (response.statusCode != 200) {
-      setState(() {
-        toDisplay = response.body;
-      });
+      _emptyDisplay("API request has Problem: ${response.body}");
       return ;
     }
     data = json.decode(response.body)['hourly'];
+    if (data == null || data['time'] == null || data['temperature_2m'] == null ||
+      data['wind_speed_10m'] == null || data['weather_code'] == null)
+    {
+      _emptyDisplay("Something wrong with API Answer/Parsing: ${response.body}");
+      return ;
+    }
     toDisplayToday = ['${citySuggestions[index]}', today, ""];
     for (int cnt = 0; cnt <= 23; cnt++)
     {
@@ -175,13 +186,12 @@ class _MyHomePageState extends State<MyHomePage> {
           temMin = temperature_temporary;
         winAvarage += data['wind_speed_10m'][cntDay * 23 + cnt];
       }
-      toDisplayWeek.add(
+      toDisplayWeek[2] +=
         "${data['time'][cntDay * 23].substring(0, 10)}   "
         "$temMin °C    "
         "$temMax °C    "
         "${getWeatherDescription(data['weather_code'][cntDay * 23 + 12])}   "
-        "${(winAvarage / 24).toStringAsFixed(2)} km/h"
-      );
+        "${(winAvarage / 24).toStringAsFixed(2)} km/h\n";
     }
   }
 
@@ -192,6 +202,7 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         searchController.clear();
         updateSuggestions("");
+        _emptyDisplay("No suitable suggestions!");
       });
       return;
     }

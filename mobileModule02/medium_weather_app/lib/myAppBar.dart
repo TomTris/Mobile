@@ -11,13 +11,15 @@ class MyAppBar extends StatefulWidget {
     required this.getCurrentLocation,
     required this.citySuggestions,
     required this.debounce,
+    required this.myState,
   });
 
   final TextEditingController searchController;
-  final Function(int) searchTheInput;
-  final Function(String) updateSuggestions;
-  final Future<void> Function() getCurrentLocation;
+  final Future<int> Function(int) searchTheInput;
+  final Future<int> Function(String) updateSuggestions;
+  final Future<int> Function() getCurrentLocation;
   final List<String> citySuggestions;
+  final Function() myState;
   Timer? debounce;
 
 
@@ -36,16 +38,24 @@ class _MyAppBarState extends State<MyAppBar> {
           decoration: InputDecoration(
             hintText: "Search Information",
           ),
-          onSubmitted: (value) => {widget.searchTheInput(-1)},
-          onChanged: (value) {
+          onSubmitted: (value) async {
+            await widget.searchTheInput(-1);
+            widget.myState();
+          },
+          onChanged: (value) async {
             if (widget.debounce != null && widget.debounce?.isActive == true)
               {widget.debounce?.cancel();}
-            widget.debounce = Timer(Duration(milliseconds: 350), () {
-              widget.updateSuggestions(value);
+            widget.debounce = Timer(Duration(milliseconds: 350), () async {
+              await widget.updateSuggestions(value);
+              widget.myState();
             });
           },
         ),
-        actions: [IconButton(onPressed: widget.getCurrentLocation, icon: Icon(Icons.location_on)),],
+        actions: [IconButton(onPressed: () async {
+          await widget.getCurrentLocation();
+          widget.myState();
+        },
+          icon: Icon(Icons.location_on)),],
         backgroundColor: Colors.blueGrey,
       ),
       if (widget.citySuggestions.isNotEmpty)
@@ -55,9 +65,10 @@ class _MyAppBarState extends State<MyAppBar> {
             itemBuilder: (context, index) {
               return ListTile(
                 title: Text(widget.citySuggestions[index]),
-                onTap: () {
+                onTap: () async {
                   widget.searchController.text = widget.citySuggestions[index];
-                  widget.searchTheInput(index);
+                  await widget.searchTheInput(index);
+                  widget.myState();
                 },
               );
             },

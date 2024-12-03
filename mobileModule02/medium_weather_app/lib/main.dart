@@ -47,6 +47,9 @@ class _MyHomePageState extends State<MyHomePage> {
   List<String>                toDisplayCurrent = [];
   List<String>                toDisplayToday = [];
   List<String>                toDisplayWeek = [];
+  DateTime?                    lastClick;
+  DateTime?                    lastShowBar;
+  Duration                    waitingTime = Duration(seconds: 2);
 
   void addAllDisplay(String str)
   {
@@ -99,7 +102,8 @@ class _MyHomePageState extends State<MyHomePage> {
   // return 0 fails, 1 - success, position_variable is updated and display the address of user.
   Future<int> getCurrentLocation() async
   {
-    if (false == await Geolocator.isLocationServiceEnabled()) {
+    bool value = await Geolocator.isLocationServiceEnabled();
+    if (value == false) {
       _emptyDisplay("location services aren't enabled on the device.");
       return (0);
     }
@@ -110,8 +114,10 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        _emptyDisplay("Permission to access the device's location is denied.");
+      if (permission == LocationPermission.deniedForever || permission == LocationPermission.denied)
+      {
+        _emptyDisplay("Permission to access the device's location is denied.\n");
+        print("Permission to access the device's location is denied.");
         return (0);
       }
     }
@@ -293,6 +299,9 @@ class _MyHomePageState extends State<MyHomePage> {
             citySuggestions: citySuggestions,
             debounce: debounce,
             myState: myState,
+            lastClick: lastClick,
+            lastShowBar: lastShowBar,
+            waitingTime: waitingTime,
           ),
         ],),
         bottomNavigationBar: const TabBar(

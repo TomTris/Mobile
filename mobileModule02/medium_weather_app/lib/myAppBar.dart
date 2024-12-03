@@ -12,6 +12,9 @@ class MyAppBar extends StatefulWidget {
     required this.citySuggestions,
     required this.debounce,
     required this.myState,
+    required this.lastClick,
+    required this.lastShowBar,
+    required this.waitingTime,
   });
 
   final TextEditingController searchController;
@@ -21,6 +24,9 @@ class MyAppBar extends StatefulWidget {
   final List<String> citySuggestions;
   final Function() myState;
   Timer? debounce;
+  DateTime? lastClick;
+  DateTime? lastShowBar;
+  final Duration waitingTime;
 
 
   @override
@@ -28,6 +34,8 @@ class MyAppBar extends StatefulWidget {
 }
 
 class _MyAppBarState extends State<MyAppBar> {
+
+  DateTime now = DateTime.now();
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -52,6 +60,18 @@ class _MyAppBarState extends State<MyAppBar> {
           },
         ),
         actions: [IconButton(onPressed: () async {
+          if (widget.lastClick != null && now.difference(widget.lastClick!) < widget.waitingTime)
+          {
+            if (widget.lastShowBar == null || now.difference(widget.lastShowBar!) > Duration(seconds: 5))
+            {
+              widget.lastShowBar = now;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("Operation in progress, please wait.")),
+              );
+            }
+            return ;
+          }
+          widget.lastClick = now;
           await widget.getCurrentLocation();
           widget.myState();
         },

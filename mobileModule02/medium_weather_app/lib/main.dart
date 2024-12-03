@@ -48,6 +48,26 @@ class _MyHomePageState extends State<MyHomePage> {
   List<String>                toDisplayToday = [];
   List<String>                toDisplayWeek = [];
 
+  void addAllDisplay(String str)
+  {
+    toDisplay += str;
+    if (toDisplayCurrent.isEmpty)
+      toDisplayCurrent = ['${str}'];
+    else
+      toDisplayCurrent.insert(1, str);
+
+    if (toDisplayToday.isEmpty)
+      toDisplayToday = ['${str}'];
+    else
+      toDisplayToday.insert(1, str);
+
+    if (toDisplayWeek.isEmpty)
+      toDisplayWeek = ['${str}'];
+    else
+      toDisplayWeek.insert(1, str);
+    citySuggestions = [];
+  }
+
   void _emptyDisplay(String str)
   {
     toDisplay = str;
@@ -55,8 +75,25 @@ class _MyHomePageState extends State<MyHomePage> {
     toDisplayToday = [];
     toDisplayWeek = [];
     citySuggestions = [];
-    setState(() {
-    });
+  }
+
+  Future<String?> getCityName(double latitude, double longitude) async
+  {
+    String url = "https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json";
+    var response;
+    var data;
+
+    response = await http.get(Uri.parse(url));
+    if (response.statusCode != 200) {
+      _emptyDisplay("Your location: ${position?.latitude}, ${position?.longitude}\nAPI request to find your city has Problem: ${response.body}");
+      return (null);
+    }
+    data = json.decode(response.body)['address'];
+    if (data != null)
+      data = data['city'] ?? data['town'] ?? data['village'] ?? data['district'] ?? data['region'] ?? data['province'] ?? data['locality'] ?? null;
+    if (data == null)
+      _emptyDisplay("Your location: ${position?.latitude}, ${position?.longitude}\nCan't find your city");
+    return (data);
   }
 
   // return 0 fails, 1 - success, position_variable is updated and display the address of user.
@@ -79,23 +116,36 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
     position = await Geolocator.getCurrentPosition();
-    _emptyDisplay("${position?.latitude}, ${position?.longitude}");
+    _emptyDisplay("${position!.latitude.toStringAsFixed(3)}, ${position!.longitude.toStringAsFixed(3)}");
+    
+    String? cityName = await getCityName(position!.latitude, position!.longitude);
+    if (cityName == null)
+      return (0);
+    String toDisplayBackup = toDisplay;
+    toDisplay = "";
+    int hasSuggestions = await updateSuggestions(cityName);
+    if (hasSuggestions == 0)
+    {
+      _emptyDisplay("${toDisplayBackup}\n${toDisplay}");
+      return (0);
+    }
+    int isOk = await searchTheInput(0);
+    addAllDisplay(toDisplayBackup);
+    if (isOk == 1)
+      return (0);
     return (1);
   }
 
-  Future<void> updateSuggestions(String cityName) async
+  Future<int> updateSuggestions(String cityName) async
   {
     String url     = "https://geocoding-api.open-meteo.com/v1/search?name=$cityName&count=10&language=en&format=json";
     final response = await http.get(Uri.parse(url));
     int count      = 0;
     var data;
 
-    if (searchController.text != cityName) {
-      return ;
-    }
     if (response.statusCode != 200) {
       _emptyDisplay("API request has Problem: ${response.body}");
-      return ;
+      return (0);
     }
     data = json.decode(response.body)['results'];
     citySuggestions = [];
@@ -103,17 +153,16 @@ class _MyHomePageState extends State<MyHomePage> {
       cityLanLon.clear();
     if (data != null) {
       for (var each in data) {
-        citySuggestions.add(
-            (each['name'] ?? "??Name") + ", " 
-          + (each['country_code'] ?? "??Country Code") + ", " 
-          + (each['admin1'] ?? each['admin2'] ?? "??admin") + ", " 
-          + (each['country'] ?? "??Country")
-        );
+        String toAdd = "";
+        if (each['name'] != null) toAdd += "${each['name']}"; else toAdd += "Unkown name";
+        if (each['country_code'] != null) toAdd += ", ${each['country_code']}";
+        if (each['admin1'] != null) toAdd += ", ${each['admin1']}";
+        if (each['country'] != null) toAdd += ", ${each['country']}";
+        citySuggestions.add(toAdd);
         cityLanLon[count++] = ["${each['latitude']}", "${each['longitude']}"];
       }
     }
-    setState(() {
-    });
+    return (1);
   }
 
   Future<String?> displayPageCurrent(int index) async
@@ -129,7 +178,7 @@ class _MyHomePageState extends State<MyHomePage> {
       return (null);
     }
     data = json.decode(response.body)['current'];
-    if (data != null)
+    if (data != null && data['time'] != null && data['temperature_2m'] != null && data['wind_speed_10m'] != null)
     {
       today = data['time'].substring(0, 10);
       toDisplayCurrent = [
@@ -139,10 +188,11 @@ class _MyHomePageState extends State<MyHomePage> {
         "Wind Speed: ${data['wind_speed_10m']} km/h"];
       return (today);
     }
+    _emptyDisplay("API request has Problem / Something wrong with API Answer/Parsing: ${response.body}");
     return (null);
   }
 
-  Future<void> displayTodayAndWeek(int index, String today) async
+  Future<int> displayTodayAndWeek(int index, String today) async
   {
     String url2 = "https://api.open-meteo.com/v1/forecast?latitude=${cityLanLon[index]?[0]}&longitude=${cityLanLon[index]?[1]}&hourly=temperature_2m,weather_code,wind_speed_10m";
     var response;
@@ -151,14 +201,14 @@ class _MyHomePageState extends State<MyHomePage> {
     response = await http.get(Uri.parse(url2));
     if (response.statusCode != 200) {
       _emptyDisplay("API request has Problem: ${response.body}");
-      return ;
+      return (0);
     }
     data = json.decode(response.body)['hourly'];
     if (data == null || data['time'] == null || data['temperature_2m'] == null ||
       data['wind_speed_10m'] == null || data['weather_code'] == null)
     {
-      _emptyDisplay("Something wrong with API Answer/Parsing: ${response.body}");
-      return ;
+      _emptyDisplay("API request has Problem / Something wrong with API Answer/Parsing: ${response.body}");
+      return (0);
     }
     toDisplayToday = ['${citySuggestions[index]}', today, ""];
     for (int cnt = 0; cnt <= 23; cnt++)
@@ -193,33 +243,35 @@ class _MyHomePageState extends State<MyHomePage> {
         "${getWeatherDescription(data['weather_code'][cntDay * 23 + 12])}   "
         "${(winAvarage / 24).toStringAsFixed(2)} km/h\n";
     }
+    return (1);
   }
 
-  void searchTheInput(int index) async
+  Future<int> searchTheInput(int index) async
   {
     if (index == -1 && citySuggestions.isEmpty)
     {
-      setState(() {
-        searchController.clear();
-        updateSuggestions("");
-        _emptyDisplay("No suitable suggestions!");
-      });
-      return;
+      searchController.clear();
+      await updateSuggestions("");
+      _emptyDisplay("No suitable suggestions!");
+      return (0);
     }
     else if (index == -1)
       index = 0;
-
+    if (index >= citySuggestions.length)
+      return (0);
     late String? today;
     today = await displayPageCurrent(index);
     if (today == null)
-      return ;
-    await displayTodayAndWeek(index, today);
-    setState(() {
-      searchController.clear();
-      updateSuggestions("");
-    });
+      return (0);
+    int isSuccess = await displayTodayAndWeek(index, today);
+    searchController.clear();
+    await updateSuggestions("");
+    return (isSuccess);
   }
 
+  void myState() {
+    setState(() {});
+  }
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -240,6 +292,7 @@ class _MyHomePageState extends State<MyHomePage> {
             getCurrentLocation: getCurrentLocation,
             citySuggestions: citySuggestions,
             debounce: debounce,
+            myState: myState,
           ),
         ],),
         bottomNavigationBar: const TabBar(

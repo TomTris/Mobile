@@ -3,9 +3,9 @@ import 'package:geolocator/geolocator.dart';
 import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
-import 'package:medium_weather_app/functions.dart';
-import 'package:medium_weather_app/pages.dart';
-import 'package:medium_weather_app/myAppBar.dart';
+import 'functions.dart';
+import 'pages.dart';
+import 'myAppBar.dart';
 
 void main() {
   runApp(const MyApp());
@@ -47,23 +47,21 @@ class _MyHomePageState extends State<MyHomePage> {
   List<String>                toDisplayCurrent = [];
   List<String>                toDisplayToday = [];
   List<String>                toDisplayWeek = [];
-  DateTime?                    lastClick;
-  DateTime?                    lastShowBar;
-  Duration                    waitingTime = Duration(seconds: 2);
-
+  DateTime?                     lastClick;
+  DateTime?                     lastShowBar;
+  Duration                      waitingTime = Duration(seconds: 4);
+  
   void addAllDisplay(String str)
   {
-    toDisplay += str;
+    toDisplay = "${toDisplay}\n${str}";
     if (toDisplayCurrent.isEmpty)
       toDisplayCurrent = ['${str}'];
     else
       toDisplayCurrent.insert(1, str);
-
     if (toDisplayToday.isEmpty)
       toDisplayToday = ['${str}'];
     else
       toDisplayToday.insert(1, str);
-
     if (toDisplayWeek.isEmpty)
       toDisplayWeek = ['${str}'];
     else
@@ -86,10 +84,16 @@ class _MyHomePageState extends State<MyHomePage> {
     var response;
     var data;
 
-    response = await http.get(Uri.parse(url));
-    if (response.statusCode != 200) {
-      _emptyDisplay("Your location: ${position?.latitude}, ${position?.longitude}\nAPI request to find your city has Problem: ${response.body}");
-      return (null);
+    try{
+      response = await http.get(Uri.parse(url));
+      if (response.statusCode != 200) {
+        _emptyDisplay("Your location: ${position?.latitude}, ${position?.longitude}\nAPI request to find your city has Problem.");
+        return (null);
+      }
+    }
+    catch (e) {
+      _emptyDisplay("Your location: ${position?.latitude}, ${position?.longitude}\nAn Error occurs, couble with API / Network");
+      return null;
     }
     data = json.decode(response.body)['address'];
     if (data != null)
@@ -122,36 +126,42 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
     position = await Geolocator.getCurrentPosition();
-    _emptyDisplay("${position!.latitude.toStringAsFixed(3)}, ${position!.longitude.toStringAsFixed(3)}");
-    
     String? cityName = await getCityName(position!.latitude, position!.longitude);
     if (cityName == null)
       return (0);
-    String toDisplayBackup = toDisplay;
+    String toDisplayBackup = "${position!.latitude.toStringAsFixed(3)}, ${position!.longitude.toStringAsFixed(3)}";
     toDisplay = "";
     int hasSuggestions = await updateSuggestions(cityName);
     if (hasSuggestions == 0)
     {
-      _emptyDisplay("${toDisplayBackup}\n${toDisplay}");
+      addAllDisplay(toDisplay);
+      addAllDisplay(toDisplayBackup);
       return (0);
     }
     int isOk = await searchTheInput(0);
+    if (isOk == 0)
+      addAllDisplay(toDisplay);
     addAllDisplay(toDisplayBackup);
-    if (isOk == 1)
-      return (0);
-    return (1);
+    return (isOk);
   }
 
   Future<int> updateSuggestions(String cityName) async
   {
     String url     = "https://geocoding-api.open-meteo.com/v1/search?name=$cityName&count=10&language=en&format=json";
-    final response = await http.get(Uri.parse(url));
+    var response;
     int count      = 0;
     var data;
 
-    if (response.statusCode != 200) {
-      _emptyDisplay("API request has Problem: ${response.body}");
-      return (0);
+    try {
+      response = await http.get(Uri.parse(url));
+      if (response.statusCode != 200) {
+        _emptyDisplay("API request has Problem");
+        return (0);
+      }
+    }
+    catch (e) {
+      _emptyDisplay("Request(API/Network) has Problem.");
+        return (0);
     }
     data = json.decode(response.body)['results'];
     citySuggestions = [];
@@ -178,9 +188,15 @@ class _MyHomePageState extends State<MyHomePage> {
     var response;
     var data;
 
-    response = await http.get(Uri.parse(url1));
-    if (response.statusCode != 200) {
-      _emptyDisplay("API request has Problem: ${response.body}");
+    try {
+      response = await http.get(Uri.parse(url1));
+      if (response.statusCode != 200) {
+        _emptyDisplay("API request has Problem");
+        return (null);
+      }
+    }
+    catch (e) {
+      _emptyDisplay("Request (API/Network) has Problem.");
       return (null);
     }
     data = json.decode(response.body)['current'];
@@ -188,13 +204,13 @@ class _MyHomePageState extends State<MyHomePage> {
     {
       today = data['time'].substring(0, 10);
       toDisplayCurrent = [
-        '${citySuggestions[index]}',
+        citySuggestions[index],
         "Temperatur: ${data['temperature_2m']} °C",
         "Weather: ${getWeatherDescription(data['weather_code'])}",
         "Wind Speed: ${data['wind_speed_10m']} km/h"];
       return (today);
     }
-    _emptyDisplay("API request has Problem / Something wrong with API Answer/Parsing: ${response.body}");
+    _emptyDisplay("API request has Problem / Something wrong with API Answer/Parsing");
     return (null);
   }
 
@@ -204,19 +220,25 @@ class _MyHomePageState extends State<MyHomePage> {
     var response;
     var data;
 
-    response = await http.get(Uri.parse(url2));
-    if (response.statusCode != 200) {
-      _emptyDisplay("API request has Problem: ${response.body}");
-      return (0);
+    try {
+      response = await http.get(Uri.parse(url2));
+      if (response.statusCode != 200) {
+        _emptyDisplay("API request has Problem");
+        return (0);
+      }
+    }
+    catch (e) {
+      _emptyDisplay("Request (API/Network) has Problem");
+        return (0);
     }
     data = json.decode(response.body)['hourly'];
     if (data == null || data['time'] == null || data['temperature_2m'] == null ||
       data['wind_speed_10m'] == null || data['weather_code'] == null)
     {
-      _emptyDisplay("API request has Problem / Something wrong with API Answer/Parsing: ${response.body}");
+      _emptyDisplay("API request has Problem / Something wrong with API Answer/Parsing");
       return (0);
     }
-    toDisplayToday = ['${citySuggestions[index]}', today, ""];
+    toDisplayToday = [citySuggestions[index], today, ""];
     for (int cnt = 0; cnt <= 23; cnt++)
     {
       toDisplayToday[2] += 
@@ -226,7 +248,7 @@ class _MyHomePageState extends State<MyHomePage> {
         "${data['wind_speed_10m'][cnt]} km/h\n";
     }
 
-    toDisplayWeek = ['${citySuggestions[index]}', today, ""];
+    toDisplayWeek = [citySuggestions[index], today, ""];
     for (int cntDay = 0; cntDay < 7; cntDay++)
     {
       double temperature_temporary = double.parse("${data['temperature_2m'][cntDay * 23]}");
@@ -252,27 +274,49 @@ class _MyHomePageState extends State<MyHomePage> {
     return (1);
   }
 
+  //Click button get location => index = -1
+  //=> if empty => said can't find your City's name.
+  //Search enter -> index = 0
+  //Select -> Select
+  //=> index >= length -> no suitable suggestions.
   Future<int> searchTheInput(int index) async
   {
-    if (index == -1 && citySuggestions.isEmpty)
+    toDisplayCurrent = [];
+    toDisplayToday = [];
+    toDisplayWeek = [];
+    if (index == -1)
+    {
+      if (citySuggestions.isEmpty)
+      {
+        _emptyDisplay("Can't find your city's name!");
+        return (0);
+      }
+      index = 0;
+    }
+    if (index >= citySuggestions.length)
     {
       searchController.clear();
-      await updateSuggestions("");
+      cityLanLon = {};
+      citySuggestions = [];
       _emptyDisplay("No suitable suggestions!");
       return (0);
     }
-    else if (index == -1)
-      index = 0;
-    if (index >= citySuggestions.length)
-      return (0);
     late String? today;
     today = await displayPageCurrent(index);
     if (today == null)
       return (0);
     int isSuccess = await displayTodayAndWeek(index, today);
     searchController.clear();
-    await updateSuggestions("");
+    citySuggestions = [];
+    cityLanLon = {};
     return (isSuccess);
+  }
+
+  void updateLastClick(DateTime time) {
+      lastClick = time;
+  }
+  void updateLastShowBar(DateTime time) {
+      lastShowBar = time;
   }
 
   void myState() {
@@ -302,6 +346,9 @@ class _MyHomePageState extends State<MyHomePage> {
             lastClick: lastClick,
             lastShowBar: lastShowBar,
             waitingTime: waitingTime,
+            updateLastClick: updateLastClick,
+            updateLastShowBar: updateLastShowBar,
+
           ),
         ],),
         bottomNavigationBar: const TabBar(

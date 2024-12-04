@@ -14,6 +14,8 @@ class MyAppBar extends StatefulWidget {
     required this.myState,
     required this.lastClick,
     required this.lastShowBar,
+    required this.updateLastClick,
+    required this.updateLastShowBar,
     required this.waitingTime,
   });
 
@@ -24,8 +26,10 @@ class MyAppBar extends StatefulWidget {
   final List<String> citySuggestions;
   final Function() myState;
   Timer? debounce;
-  DateTime? lastClick;
-  DateTime? lastShowBar;
+  final DateTime? lastClick;
+  final DateTime? lastShowBar;
+  final Function(DateTime) updateLastClick;
+  final Function(DateTime) updateLastShowBar;
   final Duration waitingTime;
 
 
@@ -35,7 +39,6 @@ class MyAppBar extends StatefulWidget {
 
 class _MyAppBarState extends State<MyAppBar> {
 
-  DateTime now = DateTime.now();
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -47,7 +50,7 @@ class _MyAppBarState extends State<MyAppBar> {
             hintText: "Search Information",
           ),
           onSubmitted: (value) async {
-            await widget.searchTheInput(-1);
+            await widget.searchTheInput(0);
             widget.myState();
           },
           onChanged: (value) async {
@@ -59,22 +62,25 @@ class _MyAppBarState extends State<MyAppBar> {
             });
           },
         ),
-        actions: [IconButton(onPressed: () async {
-          if (widget.lastClick != null && now.difference(widget.lastClick!) < widget.waitingTime)
-          {
-            if (widget.lastShowBar == null || now.difference(widget.lastShowBar!) > Duration(seconds: 5))
+        actions: [
+          IconButton(onPressed: () async {
+            DateTime now = DateTime.now();
+            if (widget.lastClick != null && now.difference(widget.lastClick!) < widget.waitingTime)
             {
-              widget.lastShowBar = now;
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Operation in progress, please wait.")),
-              );
+              if (widget.lastShowBar == null || now.difference(widget.lastShowBar!) > Duration(milliseconds: 4000))
+              {
+                widget.updateLastShowBar(now);
+                widget.myState();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("Operation in progress, please wait.")),
+                );
+              }
+              return ;
             }
-            return ;
-          }
-          widget.lastClick = now;
-          await widget.getCurrentLocation();
-          widget.myState();
-        },
+            widget.updateLastClick(now);
+            await widget.getCurrentLocation();
+            widget.myState();
+          },
           icon: Icon(Icons.location_on)),],
         backgroundColor: Colors.blueGrey,
       ),

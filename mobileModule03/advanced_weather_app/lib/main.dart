@@ -155,7 +155,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<int> updateSuggestions(String cityName) async
   {
-    String url     = "https://geocoding-api.open-meteo.com/v1/search?name=$cityName&count=10&language=en&format=json";
+    String url     = "https://geocoding-api.open-meteo.com/v1/search?name=$cityName&count=5&language=en&format=json";
     var response;
     int count      = 0;
     var data;
@@ -176,14 +176,22 @@ class _MyHomePageState extends State<MyHomePage> {
     if (cityLanLon.isNotEmpty == true)
       cityLanLon.clear();
     if (data != null) {
-      for (var each in data) {
-        String toAdd = "";
-        if (each['name'] != null) toAdd += "${each['name']}"; else toAdd += "Unkown name";
-        if (each['country_code'] != null) toAdd += ", ${each['country_code']}";
-        if (each['admin1'] != null) toAdd += ", ${each['admin1']}";
-        if (each['country'] != null) toAdd += ", ${each['country']}";
-        citySuggestions.add(toAdd);
-        cityLanLon[count++] = ["${each['latitude']}", "${each['longitude']}"];
+      for (var each in data)
+      {
+        if (each != null && each['name'] != null &&
+          each['name'].runtimeType == String &&
+          cityName.toLowerCase() == each['name'].toLowerCase().substring(0, cityName.length))
+        {
+          String toAdd = "";
+          toAdd += "${each['name']}";
+          if (each['country_code'] != null) toAdd += ", ${each['country_code']}";
+          if (each['admin1'] != null) toAdd += ", ${each['admin1']}";
+          if (each['country'] != null) toAdd += ", ${each['country']}";
+          citySuggestions.add(toAdd);
+          cityLanLon[count++] = ["${each['latitude']}", "${each['longitude']}"];
+        }
+        if (count == 5)
+          break ;
       }
     }
     return (1);

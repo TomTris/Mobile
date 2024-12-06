@@ -50,7 +50,8 @@ class _MyHomePageState extends State<MyHomePage> {
   DateTime?                     lastClick;
   DateTime?                     lastShowBar;
   Duration                      waitingTime = Duration(seconds: 4);
-  
+  int                         isAnsweredLocation = 0;
+
   void addAllDisplay(String str)
   {
     toDisplay = "${toDisplay}\n${str}";
@@ -102,9 +103,17 @@ class _MyHomePageState extends State<MyHomePage> {
       _emptyDisplay("Your location: ${position?.latitude}, ${position?.longitude}\nCan't find your city");
     return (data);
   }
-
+  
   // return 0 fails, 1 - success, position_variable is updated and display the address of user.
-  Future<int> getCurrentLocation() async
+  Future<int> getCurrentLocation(int doesCallSetState) async
+  {
+    int returnValue = await  getCurrentLocation2();
+    isAnsweredLocation = 1;
+    if (doesCallSetState == 1)
+      setState(() {});
+    return (returnValue);
+  }
+  Future<int> getCurrentLocation2() async
   {
     bool value = await Geolocator.isLocationServiceEnabled();
     if (value == false) {
@@ -121,7 +130,6 @@ class _MyHomePageState extends State<MyHomePage> {
       if (permission == LocationPermission.deniedForever || permission == LocationPermission.denied)
       {
         _emptyDisplay("Permission to access the device's location is denied.\n");
-        print("Permission to access the device's location is denied.");
         return (0);
       }
     }
@@ -322,19 +330,26 @@ class _MyHomePageState extends State<MyHomePage> {
   void myState() {
     setState(() {});
   }
+
+  @override
+  void initState() {
+    super.initState();
+    getCurrentLocation(1);
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
         body: Stack(children: [
-          TabBarView(
-            children: [
-              CurrentPage(toDisplay: toDisplay, toDisplayCurrent: toDisplayCurrent),
-              TodayPage(toDisplay: toDisplay, toDisplayToday: toDisplayToday),
-              WeekPage(toDisplay: toDisplay, toDisplayWeek: toDisplayWeek),
-            ],
-          ),
+            TabBarView(
+              children: [
+                CurrentPage(toDisplay: toDisplay, toDisplayCurrent: toDisplayCurrent),
+                TodayPage(toDisplay: toDisplay, toDisplayToday: toDisplayToday),
+                WeekPage(toDisplay: toDisplay, toDisplayWeek: toDisplayWeek),
+              ],
+            ),
           MyAppBar(
             searchController: searchController,
             searchTheInput: searchTheInput,
@@ -348,7 +363,7 @@ class _MyHomePageState extends State<MyHomePage> {
             waitingTime: waitingTime,
             updateLastClick: updateLastClick,
             updateLastShowBar: updateLastShowBar,
-
+            isAnsweredLocation: isAnsweredLocation,
           ),
         ],),
         bottomNavigationBar: const TabBar(

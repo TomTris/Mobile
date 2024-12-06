@@ -17,12 +17,13 @@ class MyAppBar extends StatefulWidget {
     required this.updateLastClick,
     required this.updateLastShowBar,
     required this.waitingTime,
+    required this.isAnsweredLocation,
   });
 
   final TextEditingController searchController;
   final Future<int> Function(int) searchTheInput;
   final Future<int> Function(String) updateSuggestions;
-  final Future<int> Function() getCurrentLocation;
+  final Future<int> Function(int) getCurrentLocation;
   final List<String> citySuggestions;
   final Function() myState;
   Timer? debounce;
@@ -31,6 +32,7 @@ class MyAppBar extends StatefulWidget {
   final Function(DateTime) updateLastClick;
   final Function(DateTime) updateLastShowBar;
   final Duration waitingTime;
+  final int     isAnsweredLocation;
 
 
   @override
@@ -46,6 +48,7 @@ class _MyAppBarState extends State<MyAppBar> {
       AppBar(
         title:  TextField(
           controller: widget.searchController,
+          enabled: widget.isAnsweredLocation == 0 ? false : true ,
           decoration: InputDecoration(
             hintText: "Search Information",
           ),
@@ -63,7 +66,7 @@ class _MyAppBarState extends State<MyAppBar> {
           },
         ),
         actions: [
-          IconButton(onPressed: () async {
+          IconButton(onPressed: widget.isAnsweredLocation == 0 ? null : () async {
             DateTime now = DateTime.now();
             if (widget.lastClick != null && now.difference(widget.lastClick!) < widget.waitingTime)
             {
@@ -78,8 +81,7 @@ class _MyAppBarState extends State<MyAppBar> {
               return ;
             }
             widget.updateLastClick(now);
-            await widget.getCurrentLocation();
-            widget.myState();
+            await widget.getCurrentLocation(1);
           },
           icon: Icon(Icons.location_on)),],
         backgroundColor: Colors.blueGrey,

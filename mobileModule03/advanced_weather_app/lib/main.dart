@@ -294,7 +294,7 @@ class _MyHomePageState extends State<MyHomePage> {
       double temMin = temperature_temporary;
       for (int cnt = 1; cnt <= 23; cnt++)
       {
-        temperature_temporary = double.parse("${data['temperature_2m'][cntDay * 24 + 1]}");
+        temperature_temporary = double.parse("${data['temperature_2m'][cntDay * 24 + cnt]}");
         if (temMax < temperature_temporary)
           temMax = temperature_temporary;
         else if (temMin > temperature_temporary)

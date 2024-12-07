@@ -165,7 +165,7 @@ class TodayPage extends StatelessWidget {
       }
     return [
       Text (toDisplayToday[count++], style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold, color: Colors.blue)),
-      if (toDisplayToday.length == 28)
+      if (toDisplayToday.length == 29)
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -303,7 +303,7 @@ class WeekPage extends StatelessWidget {
       }
       return [
         Text (toDisplayWeek[count++], style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold, color: Colors.blue)),
-        if (toDisplayWeek.length == 8)
+        if (toDisplayWeek.length == 10)
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -312,13 +312,6 @@ class WeekPage extends StatelessWidget {
               Text (toDisplayWeek[count++], style: TextStyle(fontSize: 19, color: Colors.white70)),],
           ),
         Text (toDisplayWeek[count++], style: TextStyle(fontSize: 19, color: Colors.white70)),
-        Row (
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Icon(Icons.today, color: Colors.orange, size: 19,),
-            Text (toDisplayWeek[count++], style: TextStyle(fontSize: 19, color: Colors.orange,)),]
-        ),
         Text(""),
         SfCartesianChart(
           backgroundColor: const Color.fromARGB(70, 119, 87, 55),

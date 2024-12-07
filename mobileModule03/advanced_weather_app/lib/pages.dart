@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'classes.dart';
 import 'functions.dart';
+import 'package:intl/intl.dart';
 
 IconData getWeatherIcon(int number) {
   switch (number) {
@@ -131,12 +132,12 @@ class TodayPage extends StatelessWidget {
     super.key,
     required this.toDisplay,
     required this.toDisplayToday,
-    required this.chartData
+    required this.chartDataToday
   });
 
   final String             toDisplay;
   final List<String> toDisplayToday;
-  final List<InHourData>? chartData;
+  final List<InHourData>? chartDataToday;
   
   @override
   Widget build(BuildContext context) {
@@ -183,7 +184,7 @@ class TodayPage extends StatelessWidget {
         tooltipBehavior: TooltipBehavior(enable: true),
         series: <ChartSeries>[
           StackedLineSeries<InHourData, int>(
-            dataSource:   chartData!,
+            dataSource:   chartDataToday!,
             xValueMapper: (InHourData exp, _)=> exp.hour,
             yValueMapper: (InHourData exp, _)=> exp.temperature_2m,
             markerSettings:  MarkerSettings(isVisible: true),
@@ -197,7 +198,7 @@ class TodayPage extends StatelessWidget {
         ),
         primaryYAxis: NumericAxis(
           axisLabelFormatter: (AxisLabelRenderDetails details) {
-            return ChartAxisLabel('${details.value}°C', TextStyle(color: Colors.white70));
+            return ChartAxisLabel('${details.value.toStringAsFixed(0)}°C', TextStyle(color: Colors.white70));
           },
         ),
       ),
@@ -207,7 +208,7 @@ class TodayPage extends StatelessWidget {
         height: 230,
         color: const Color.fromARGB(70, 119, 87, 55),
         child: ListView.builder(
-        itemCount: chartData!.length,
+        itemCount: chartDataToday!.length,
         scrollDirection: Axis.horizontal,
         itemBuilder: (context, index) {
           return (
@@ -217,19 +218,19 @@ class TodayPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text('${chartData![index].hour.toString().padLeft(2, '0')}:00', style:  TextStyle(color: Colors.white70),),
+                  Text('${chartDataToday![index].hour.toString().padLeft(2, '0')}:00', style:  TextStyle(color: Colors.white70),),
                   Text(""),
-                  Text(getWeatherDescription(chartData![index].weather_code)!, style:  TextStyle(fontSize: 12, color: Colors.white70),),
-                  Icon(getWeatherIcon(chartData![index].weather_code), color: Colors.blue, size: 25,),
+                  Text(getWeatherDescription(chartDataToday![index].weather_code)!, style:  TextStyle(fontSize: 12, color: Colors.white70),),
+                  Icon(getWeatherIcon(chartDataToday![index].weather_code), color: Colors.blue, size: 25,),
                   Text(""),
-                  Text('${chartData![index].temperature_2m}°C', style: TextStyle(fontSize: 21, color: Colors.orange,)),
+                  Text('${chartDataToday![index].temperature_2m}°C', style: TextStyle(fontSize: 21, color: Colors.orange,)),
                   Text(""),
                   Row (
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       const Icon(Icons.air, color: Colors.white, size: 18,),
-                      Text (' ${chartData![index].wind_speed_10m}km/h', style: TextStyle(fontSize: 15, color: Colors.white,)),]
+                      Text (' ${chartDataToday![index].wind_speed_10m}km/h', style: TextStyle(fontSize: 15, color: Colors.white,)),]
                   ),
                 ],
               )
@@ -253,28 +254,123 @@ class WeekPage extends StatelessWidget {
     super.key,
     required this.toDisplay,
     required this.toDisplayWeek,
+    required this.chartDataWeek,
   });
 
   final String             toDisplay;
-  final List<String> toDisplayWeek;
+  final List<String>       toDisplayWeek;
+  final List<WeekData>?      chartDataWeek;
 
   @override
   Widget build(BuildContext context) {
+    List<Widget> toDisplayWeekPage()
+    {
+      int count = 0;
+      if (toDisplayWeek.isEmpty)
+      {
+        return [Column(
+          mainAxisAlignment: MainAxisAlignment.center, // Center vertically
+          crossAxisAlignment: CrossAxisAlignment.center, // horizental
+          children: [
+            Text(toDisplay, style: TextStyle(fontSize: 21)),
+          ]
+        )];
+      }
+      return [
+        Text (toDisplayWeek[count++], style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold, color: Colors.blue)),
+        if (toDisplayWeek.length == 8)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Icon(Icons.location_on, color: Colors.white54,),
+              Text (toDisplayWeek[count++], style: TextStyle(fontSize: 19, color: Colors.white70)),],
+          ),
+        Text (toDisplayWeek[count++], style: TextStyle(fontSize: 19, color: Colors.white70)),
+        Row (
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Icon(Icons.today, color: Colors.orange, size: 19,),
+            Text (toDisplayWeek[count++], style: TextStyle(fontSize: 19, color: Colors.orange,)),]
+        ),
+        Text(""),
+        SfCartesianChart(
+          backgroundColor: const Color.fromARGB(70, 119, 87, 55),
+          title: ChartTitle(
+            text: 'Weekly temperatures',
+            textStyle: TextStyle(color: Colors.white70)),
+            legend: Legend(
+              isVisible: true,
+              textStyle: TextStyle(color: Colors.white60),
+              position: LegendPosition.bottom),
+          tooltipBehavior: TooltipBehavior(enable: true),
+          series: <ChartSeries>[
+            LineSeries<WeekData, String>(
+              dataSource:   chartDataWeek!,
+              xValueMapper: (WeekData exp, _)=> exp.dayMonth,
+              yValueMapper: (WeekData exp, _)=> exp.max,
+              markerSettings:  MarkerSettings(isVisible: true),
+              color: Colors.red,
+              name: "Max temperatur"
+            ),
+            LineSeries<WeekData, String>(
+              dataSource:   chartDataWeek!,
+              xValueMapper: (WeekData exp, _)=> exp.dayMonth,
+              yValueMapper: (WeekData exp, _)=> exp.min,
+              markerSettings:  MarkerSettings(isVisible: true),
+              color: Colors.blue,
+              name: "Min temperatur"
+            ),
+          ],
+          primaryXAxis: CategoryAxis(
+            labelStyle: TextStyle(color: Colors.white70)
+          ),
+          primaryYAxis: NumericAxis(
+            numberFormat: NumberFormat.compact(),
+            axisLabelFormatter: (AxisLabelRenderDetails details) {
+              return ChartAxisLabel('${details.value.toStringAsFixed(0)}°C', TextStyle(color: Colors.white70));
+            },
+          ),
+        ),
+        Text(""),
+      Text(""),
+      Container(
+        height: 230,
+        color: const Color.fromARGB(70, 119, 87, 55),
+        child: ListView.builder(
+        itemCount: chartDataWeek!.length,
+        scrollDirection: Axis.horizontal,
+        itemBuilder: (context, index) {
+          return (
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text('${chartDataWeek![index].dayMonth}', style:  TextStyle(color: Colors.white70),),
+                  Text(""),
+                  Text(getWeatherDescription(chartDataWeek![index].weather_code)!, style:  TextStyle(fontSize: 12, color: Colors.white70),),
+                  Icon(getWeatherIcon(chartDataWeek![index].weather_code), color: Colors.blue, size: 45,),
+                  Text(""),
+                  Text('${chartDataWeek![index].max}°C', style: TextStyle(fontSize: 21, color: Colors.red,)),
+                  Text('${chartDataWeek![index].min}°C', style: TextStyle(fontSize: 21, color: Colors.blue,)),
+                  Text(""),
+                ],
+              )
+            )
+          );
+        })
+      ),
+      Text(""),
+      Text("")
+      ];
+    }
     return Column(
       mainAxisAlignment: MainAxisAlignment.center, // Center vertically
       crossAxisAlignment: CrossAxisAlignment.center, // horizental
-      children: [
-        if (toDisplayWeek.isEmpty)
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center, // Center vertically
-            crossAxisAlignment: CrossAxisAlignment.center, // horizental
-            children: [
-              Text(toDisplay, style: TextStyle(fontSize: 21)),
-            ]
-          ),
-        for (var each in toDisplayWeek)
-          Text(each, style: const TextStyle(fontSize: 21)),
-      ],
+      children: toDisplayWeekPage(),
     );
   }
 }

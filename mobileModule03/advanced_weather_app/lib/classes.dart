@@ -7,3 +7,13 @@ class InHourData {
   final int weather_code;
   final double wind_speed_10m;
 }
+
+class WeekData {
+  WeekData(
+    this.dayMonth, this.max, this.min, this.weather_code
+  );
+  final String dayMonth;
+  final double max;
+  final double min;
+  final int weather_code;
+}

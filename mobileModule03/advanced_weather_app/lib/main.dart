@@ -54,7 +54,8 @@ class _MyHomePageState extends State<MyHomePage> {
   Duration                      waitingTime = Duration(seconds: 4);
   int                         isAnsweredLocation = 0;
   int                         weather_code = 0;
-  List<InHourData>?            chartData;
+  List<InHourData>?            chartDataToday;
+  List<WeekData>?            chartDataWeek;
 
   void addAllDisplay(String str)
   {
@@ -278,15 +279,17 @@ class _MyHomePageState extends State<MyHomePage> {
         "${data['wind_speed_10m'][cnt]}";
       toDisplayToday.add(toAdd);
     }
-    chartData = getChartData(toDisplayToday, toDisplayToday.length - 25);
+    chartDataToday = getChartDataToday(toDisplayToday, toDisplayToday.length - 25);
 
-    toDisplayWeek = [citySuggestions[index], today, ""];
+    toDisplayWeek = [
+      citySuggestions[index].substring(0, citySuggestions[index].indexOf(",")),
+      citySuggestions[index].substring(citySuggestions[index].indexOf(",") + 2),
+    ];
     for (int cntDay = 0; cntDay < 7; cntDay++)
     {
       double temperature_temporary = double.parse("${data['temperature_2m'][cntDay * 24]}");
       double temMax = temperature_temporary;
       double temMin = temperature_temporary;
-      double winAvarage = data['wind_speed_10m'][cntDay * 24];
       for (int cnt = 1; cnt <= 23; cnt++)
       {
         temperature_temporary = double.parse("${data['temperature_2m'][cntDay * 24 + 1]}");
@@ -294,15 +297,14 @@ class _MyHomePageState extends State<MyHomePage> {
           temMax = temperature_temporary;
         else if (temMin > temperature_temporary)
           temMin = temperature_temporary;
-        winAvarage += data['wind_speed_10m'][cntDay * 24 + cnt];
       }
-      toDisplayWeek[2] +=
-        "${data['time'][cntDay * 24].substring(0, 10)}   "
-        "$temMin °C    "
-        "$temMax °C    "
-        "${getWeatherDescription(data['weather_code'][cntDay * 24 + 12])}   "
-        "${(winAvarage / 24).toStringAsFixed(2)} km/h\n";
+      toDisplayWeek.add(
+        "${data['time'][cntDay * 24].substring(0, 10)},"
+        "$temMin,"
+        "$temMax,"
+        "${data['weather_code'][cntDay * 24 + 12]}");
     }
+    chartDataWeek = getChartDataWeek(toDisplayWeek, toDisplayWeek.length - 7);
     return (1);
   }
 
@@ -381,9 +383,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 children: [
                   TabBarView(
                     children: [
+                      WeekPage(toDisplay: toDisplay, toDisplayWeek: toDisplayWeek, chartDataWeek: chartDataWeek),
                       CurrentPage(toDisplay: toDisplay, toDisplayCurrent: toDisplayCurrent, weather_code: weather_code),
-                      TodayPage(toDisplay: toDisplay, toDisplayToday: toDisplayToday, chartData: chartData),
-                      WeekPage(toDisplay: toDisplay, toDisplayWeek: toDisplayWeek),
+                      TodayPage(toDisplay: toDisplay, toDisplayToday: toDisplayToday, chartDataToday: chartDataToday),
                     ],
                   ),
                   MyAppBar(
@@ -413,9 +415,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   labelColor: Colors.blue,
                   unselectedLabelColor: Colors.blueGrey,
                   tabs: [
-                    Tab(icon: Icon(Icons.access_time,),text: 'Currently'),
                     Tab(icon: Icon(Icons.calendar_view_week), text: 'Weekly'),
                     Tab(icon: Icon(Icons.calendar_today), text: 'Today'),
+                    Tab(icon: Icon(Icons.access_time,),text: 'Currently'),
                   ]
                 ),
               ),
@@ -428,25 +430,44 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-List<InHourData> getChartData(List<String> toDisplayToday, int count) {
-    List<InHourData> ChartData = [];
-    late String hour;
-    late String temperature_2m;
+List<InHourData> getChartDataToday(List<String> toDisplayToday, int count) {
+  List<InHourData> ChartDataToday = [];
+  late String hour;
+  late String temperature_2m;
+  late String weather_code;
+  late String wind_speed_10m;
+  for (int count2 = 0; count2 <= 24; count2++)
+  {
+    hour = toDisplayToday[count + count2].substring(0, 2);
+    toDisplayToday[count + count2] = toDisplayToday[count + count2].substring(6);
+    temperature_2m = toDisplayToday[count + count2].substring(0, toDisplayToday[count + count2].indexOf(","));
+    toDisplayToday[count + count2] = toDisplayToday[count + count2].substring(temperature_2m.length + 1);
+    weather_code = toDisplayToday[count + count2].substring(0, toDisplayToday[count + count2].indexOf(","));
+    toDisplayToday[count + count2] = toDisplayToday[count + count2].substring(weather_code.length + 1);
+    wind_speed_10m = toDisplayToday[count + count2];
+    if (count2 == 24)
+      ChartDataToday.add(InHourData(24, double.parse(temperature_2m), int.parse(weather_code), double.parse(wind_speed_10m)));
+    else
+      ChartDataToday.add(InHourData(int.parse(hour), double.parse(temperature_2m), int.parse(weather_code), double.parse(wind_speed_10m)));
+  }
+  return (ChartDataToday);
+}
+
+List<WeekData> getChartDataWeek(List<String> toDisplayWeek, int count) {
+    List<WeekData> ChartDataToday = [];
+    late String dayMonth;
+    late String max;
+    late String min;
     late String weather_code;
-    late String wind_speed_10m;
-    for (int count2 = 0; count2 <= 24; count2++)
+    for (int count2 = 0; count2 <= 6; count2++)
     {
-      hour = toDisplayToday[count + count2].substring(0, 2);
-      toDisplayToday[count + count2] = toDisplayToday[count + count2].substring(6);
-      temperature_2m = toDisplayToday[count + count2].substring(0, toDisplayToday[count + count2].indexOf(","));
-      toDisplayToday[count + count2] = toDisplayToday[count + count2].substring(temperature_2m.length + 1);
-      weather_code = toDisplayToday[count + count2].substring(0, toDisplayToday[count + count2].indexOf(","));
-      toDisplayToday[count + count2] = toDisplayToday[count + count2].substring(weather_code.length + 1);
-      wind_speed_10m = toDisplayToday[count + count2];
-      if (count2 == 24)
-        ChartData.add(InHourData(int.parse("24"), double.parse(temperature_2m), int.parse(weather_code), double.parse(wind_speed_10m)));
-      else
-        ChartData.add(InHourData(int.parse(hour), double.parse(temperature_2m), int.parse(weather_code), double.parse(wind_speed_10m)));
+      dayMonth = toDisplayWeek[count + count2].substring(5, 10);
+      toDisplayWeek[count + count2] = toDisplayWeek[count + count2].substring(11);
+      min = toDisplayWeek[count + count2].substring(0, toDisplayWeek[count + count2].indexOf(","));
+      toDisplayWeek[count + count2] = toDisplayWeek[count + count2].substring(min.length + 1);
+      max = toDisplayWeek[count + count2].substring(0, toDisplayWeek[count + count2].indexOf(","));
+      weather_code = toDisplayWeek[count + count2].substring(max.length + 1);
+      ChartDataToday.add(WeekData(dayMonth, double.parse(max), double.parse(min), int.parse(weather_code) ));
     }
-    return (ChartData);
+    return (ChartDataToday);
   }

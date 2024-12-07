@@ -128,7 +128,7 @@ class CurrentPage extends StatelessWidget {
 
 
 class TodayPage extends StatelessWidget {
-  const TodayPage({
+  TodayPage({
     super.key,
     required this.toDisplay,
     required this.toDisplayToday,
@@ -138,9 +138,15 @@ class TodayPage extends StatelessWidget {
   final String             toDisplay;
   final List<String> toDisplayToday;
   final List<InHourData>? chartDataToday;
+  final ScrollController _scrollController = ScrollController();
+  @override
+  void depose() {
+    _scrollController.dispose();
+  }
   
   @override
   Widget build(BuildContext context) {
+
   List<Widget> toDisplayTodayPage()
   {
     int count = 0;
@@ -207,39 +213,49 @@ class TodayPage extends StatelessWidget {
       Container(
         height: 230,
         color: const Color.fromARGB(70, 119, 87, 55),
-        child: ListView.builder(
-        itemCount: chartDataToday!.length,
-        scrollDirection: Axis.horizontal,
-        itemBuilder: (context, index) {
-          return (
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text('${chartDataToday![index].hour.toString().padLeft(2, '0')}:00', style:  TextStyle(color: Colors.white70),),
-                  Text(""),
-                  Text(getWeatherDescription(chartDataToday![index].weather_code)!, style:  TextStyle(fontSize: 12, color: Colors.white70),),
-                  Icon(getWeatherIcon(chartDataToday![index].weather_code), color: Colors.blue, size: 25,),
-                  Text(""),
-                  Text('${chartDataToday![index].temperature_2m}°C', style: TextStyle(fontSize: 21, color: Colors.orange,)),
-                  Text(""),
-                  Row (
+        child: ScrollbarTheme(
+          data: ScrollbarThemeData(
+            thumbColor: WidgetStateProperty.all(const Color.fromARGB(100, 119, 87, 55)),
+            trackColor: WidgetStateProperty.all(const Color.fromARGB(100, 255, 255, 255)),),
+          child: Scrollbar(
+            controller: _scrollController,
+              trackVisibility: true,
+              thickness: 7.0,
+              radius: Radius.circular(8.0), 
+            child: ListView.builder(
+            controller: _scrollController,
+            itemCount: chartDataToday!.length,
+            scrollDirection: Axis.horizontal,
+            itemBuilder: (context, index) {
+              return (
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const Icon(Icons.air, color: Colors.white, size: 18,),
-                      Text (' ${chartDataToday![index].wind_speed_10m}km/h', style: TextStyle(fontSize: 15, color: Colors.white,)),]
-                  ),
-                ],
-              )
-            )
-          );
-        })
+                      Text('${chartDataToday![index].hour.toString().padLeft(2, '0')}:00', style:  TextStyle(color: Colors.white70),),
+                      Text(""),
+                      Text(getWeatherDescription(chartDataToday![index].weather_code)!, style:  TextStyle(fontSize: 12, color: Colors.white70),),
+                      Icon(getWeatherIcon(chartDataToday![index].weather_code), color: Colors.blue, size: 25,),
+                      Text(""),
+                      Text('${chartDataToday![index].temperature_2m}°C', style: TextStyle(fontSize: 21, color: Colors.orange,)),
+                      Text(""),
+                      Row (
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.air, color: Colors.white, size: 18,),
+                          Text (' ${chartDataToday![index].wind_speed_10m}km/h', style: TextStyle(fontSize: 15, color: Colors.white,)),]
+                      ),
+                    ],
+                  )
+                )
+              );
+            })
+          )
+        )
       ),
-      Text(""),
-      Text("")
     ];
   }
     return Column(
@@ -250,19 +266,28 @@ class TodayPage extends StatelessWidget {
 }
 
 class WeekPage extends StatelessWidget {
-  const WeekPage({
+  WeekPage({
     super.key,
     required this.toDisplay,
     required this.toDisplayWeek,
     required this.chartDataWeek,
+    required this.screenWidth,
   });
 
   final String             toDisplay;
   final List<String>       toDisplayWeek;
   final List<WeekData>?      chartDataWeek;
+  final double screenWidth;
+  final ScrollController _scrollController = ScrollController();
 
   @override
+  void depose() {
+    _scrollController.dispose();
+  }
+  
+  @override
   Widget build(BuildContext context) {
+
     List<Widget> toDisplayWeekPage()
     {
       int count = 0;
@@ -334,37 +359,51 @@ class WeekPage extends StatelessWidget {
           ),
         ),
         Text(""),
-      Text(""),
-      Container(
-        height: 230,
-        color: const Color.fromARGB(70, 119, 87, 55),
-        child: ListView.builder(
-        itemCount: chartDataWeek!.length,
-        scrollDirection: Axis.horizontal,
-        itemBuilder: (context, index) {
-          return (
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text('${chartDataWeek![index].dayMonth}', style:  TextStyle(color: Colors.white70),),
-                  Text(""),
-                  Text(getWeatherDescription(chartDataWeek![index].weather_code)!, style:  TextStyle(fontSize: 12, color: Colors.white70),),
-                  Icon(getWeatherIcon(chartDataWeek![index].weather_code), color: Colors.blue, size: 45,),
-                  Text(""),
-                  Text('${chartDataWeek![index].max}°C', style: TextStyle(fontSize: 21, color: Colors.red,)),
-                  Text('${chartDataWeek![index].min}°C', style: TextStyle(fontSize: 21, color: Colors.blue,)),
-                  Text(""),
-                ],
+        Container (
+          child: Container(
+            height: 230,
+            color: const Color.fromARGB(70, 119, 87, 55),
+            child: ScrollbarTheme(
+              data: ScrollbarThemeData(
+                thumbColor: WidgetStateProperty.all(const Color.fromARGB(100, 119, 87, 55)),
+                trackColor: WidgetStateProperty.all(const Color.fromARGB(100, 255, 255, 255)),
+              ), 
+              child: Scrollbar(
+                controller: _scrollController,
+                trackVisibility: true,
+                thickness: 7.0,
+                radius: Radius.circular(8.0), 
+                child: ListView.builder(
+                  controller: _scrollController,
+                  itemCount: chartDataWeek!.length,
+                  scrollDirection: Axis.horizontal,
+                  padding: screenWidth > 600 ? EdgeInsets.symmetric(horizontal: (screenWidth - 600) / 2) : EdgeInsets.symmetric(horizontal: 0),
+                  itemBuilder: (context, index) {
+                    return (
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 15.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text('${chartDataWeek![index].dayMonth}', style:  TextStyle(color: Colors.white70),),
+                            Text(""),
+                            Text(getWeatherDescription(chartDataWeek![index].weather_code)!, style:  TextStyle(fontSize: 12, color: Colors.white70),),
+                            Icon(getWeatherIcon(chartDataWeek![index].weather_code), color: Colors.blue, size: 45,),
+                            Text(""),
+                            Text('${chartDataWeek![index].max}°C', style: TextStyle(fontSize: 21, color: Colors.red,)),
+                            Text('${chartDataWeek![index].min}°C', style: TextStyle(fontSize: 21, color: Colors.blue,)),
+                            Text(""),
+                          ],
+                        )
+                      )
+                    );
+                  }
+                ),
               )
             )
-          );
-        })
-      ),
-      Text(""),
-      Text("")
+          ),
+        ),
       ];
     }
     return Column(

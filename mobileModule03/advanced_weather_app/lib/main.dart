@@ -17,6 +17,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
@@ -24,16 +25,17 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      home: const MyHomePage(
-        title: 'Flutter Demo Home Page'),
+      home: MyHomePage(
+        title: 'Flutter Demo Home Page',
+        screenWidth: screenWidth),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  const MyHomePage({super.key, required this.title, required this.screenWidth});
   final String title;
-
+  final double screenWidth;
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
@@ -385,7 +387,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: [
                       CurrentPage(toDisplay: toDisplay, toDisplayCurrent: toDisplayCurrent, weather_code: weather_code),
                       TodayPage(toDisplay: toDisplay, toDisplayToday: toDisplayToday, chartDataToday: chartDataToday),
-                      WeekPage(toDisplay: toDisplay, toDisplayWeek: toDisplayWeek, chartDataWeek: chartDataWeek),
+                      WeekPage(toDisplay: toDisplay, toDisplayWeek: toDisplayWeek, chartDataWeek: chartDataWeek, screenWidth: widget.screenWidth),
                     ],
                   ),
                   MyAppBar(

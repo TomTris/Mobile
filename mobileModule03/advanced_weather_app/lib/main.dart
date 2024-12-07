@@ -383,9 +383,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 children: [
                   TabBarView(
                     children: [
-                      WeekPage(toDisplay: toDisplay, toDisplayWeek: toDisplayWeek, chartDataWeek: chartDataWeek),
                       CurrentPage(toDisplay: toDisplay, toDisplayCurrent: toDisplayCurrent, weather_code: weather_code),
                       TodayPage(toDisplay: toDisplay, toDisplayToday: toDisplayToday, chartDataToday: chartDataToday),
+                      WeekPage(toDisplay: toDisplay, toDisplayWeek: toDisplayWeek, chartDataWeek: chartDataWeek),
                     ],
                   ),
                   MyAppBar(
@@ -415,9 +415,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   labelColor: Colors.blue,
                   unselectedLabelColor: Colors.blueGrey,
                   tabs: [
-                    Tab(icon: Icon(Icons.calendar_view_week), text: 'Weekly'),
-                    Tab(icon: Icon(Icons.calendar_today), text: 'Today'),
                     Tab(icon: Icon(Icons.access_time,),text: 'Currently'),
+                    Tab(icon: Icon(Icons.calendar_today), text: 'Today'),
+                    Tab(icon: Icon(Icons.calendar_view_week), text: 'Weekly'),
                   ]
                 ),
               ),

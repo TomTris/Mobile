@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'functions.dart';
 import 'pages.dart';
 import 'myAppBar.dart';
+import 'classes.dart';
 
 void main() {
   runApp(const MyApp());
@@ -53,6 +54,8 @@ class _MyHomePageState extends State<MyHomePage> {
   Duration                      waitingTime = Duration(seconds: 4);
   int                         isAnsweredLocation = 0;
   int                         weather_code = 0;
+  List<InHourData>?            chartData;
+
   void addAllDisplay(String str)
   {
     toDisplay = "${toDisplay}\n${str}";
@@ -262,15 +265,20 @@ class _MyHomePageState extends State<MyHomePage> {
       _emptyDisplay("API request has Problem / Something wrong with API Answer/Parsing");
       return (0);
     }
-    toDisplayToday = [citySuggestions[index], today, ""];
+    toDisplayToday = [
+      citySuggestions[index].substring(0, citySuggestions[index].indexOf(",")),
+      citySuggestions[index].substring(citySuggestions[index].indexOf(",") + 2),
+      today];
     for (int cnt = 0; cnt <= 23; cnt++)
     {
-      toDisplayToday[2] += 
-        "${data['time'][cnt].substring(11)}   " 
-        "${data['temperature_2m'][cnt]} °C    "
-        "${getWeatherDescription(data['weather_code'][cnt])}   "
-        "${data['wind_speed_10m'][cnt]} km/h\n";
+      late String toAdd;
+        toAdd = "${data['time'][cnt].substring(11)}," 
+        "${data['temperature_2m'][cnt]},"
+        "${data['weather_code'][cnt]},"
+        "${data['wind_speed_10m'][cnt]}";
+      toDisplayToday.add(toAdd);
     }
+    chartData = getChartData(toDisplayToday, toDisplayToday.length - 24);
 
     toDisplayWeek = [citySuggestions[index], today, ""];
     for (int cntDay = 0; cntDay < 7; cntDay++)
@@ -373,8 +381,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 children: [
                   TabBarView(
                     children: [
+                      TodayPage(toDisplay: toDisplay, toDisplayToday: toDisplayToday, chartData: chartData),
                       CurrentPage(toDisplay: toDisplay, toDisplayCurrent: toDisplayCurrent, weather_code: weather_code),
-                      TodayPage(toDisplay: toDisplay, toDisplayToday: toDisplayToday),
                       WeekPage(toDisplay: toDisplay, toDisplayWeek: toDisplayWeek),
                     ],
                   ),
@@ -405,8 +413,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   labelColor: Colors.blue,
                   unselectedLabelColor: Colors.blueGrey,
                   tabs: [
-                    Tab(icon: Icon(Icons.access_time,),text: 'Currently'),
                     Tab(icon: Icon(Icons.calendar_today), text: 'Today'),
+                    Tab(icon: Icon(Icons.access_time,),text: 'Currently'),
                     Tab(icon: Icon(Icons.calendar_view_week), text: 'Weekly'),
                   ]
                 ),
@@ -419,3 +427,23 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+
+List<InHourData> getChartData(List<String> toDisplayToday, int count) {
+    List<InHourData> ChartData = [];
+    late String hour;
+    late String temperature_2m;
+    late String weather_code;
+    late String wind_speed_10m;
+    for (int count2 = 0; count2 <= 23; count2++)
+    {
+      hour = toDisplayToday[count + count2].substring(0, 2);
+      toDisplayToday[count + count2] = toDisplayToday[count + count2].substring(6);
+      temperature_2m = toDisplayToday[count + count2].substring(0, toDisplayToday[count + count2].indexOf(","));
+      toDisplayToday[count + count2] = toDisplayToday[count + count2].substring(temperature_2m.length + 1);
+      weather_code = toDisplayToday[count + count2].substring(0, toDisplayToday[count + count2].indexOf(","));
+      toDisplayToday[count + count2] = toDisplayToday[count + count2].substring(weather_code.length + 1);
+      wind_speed_10m = toDisplayToday[count + count2];
+      ChartData.add(InHourData(int.parse(hour), double.parse(temperature_2m), int.parse(weather_code), double.parse(wind_speed_10m)));
+    }
+    return (ChartData);
+  }

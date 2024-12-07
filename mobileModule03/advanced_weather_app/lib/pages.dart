@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
+import 'classes.dart';
 
 IconData getWeatherIcon(int number) {
   switch (number) {
@@ -64,75 +66,54 @@ class CurrentPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> toDisplayCurrentPage(int weather_code)
-    {
-      if (toDisplayCurrent.isEmpty)
-      {
+    List<Widget> toDisplayCurrentPage(int weather_code){
+      if (toDisplayCurrent.isEmpty) {
         return  [Column(
           mainAxisAlignment: MainAxisAlignment.center, // Center vertically
           crossAxisAlignment: CrossAxisAlignment.center, // horizental
           children: [Text(toDisplay, style: TextStyle(fontSize: 21, color: Colors.white70)),]
         )];
       }
-      if (toDisplayCurrent.length >= 5)
-      {
-        int count = 0;
+      if (toDisplayCurrent.length < 4) {
         return [
-          Text (toDisplayCurrent[count++], style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold, color: Colors.blue)),
-          if (toDisplayCurrent.length == 6)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.location_on,
-                  color: Colors.white54,),
-                Text (toDisplayCurrent[count++], style: TextStyle(fontSize: 19, color: Colors.white70)),
-              ],
-            ),
-          Text (toDisplayCurrent[count++], style: TextStyle(fontSize: 19, color: Colors.white70)),
-          Text (""),
-          Text (""),
-          Text (""),
-          Row (
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.thermostat,
-                color: Colors.orange,
-                size: 60,
-                ),
-              Text (toDisplayCurrent[count++], style: TextStyle(fontSize: 37, color: Colors.orange,)),
-            ]
-          ),
-          Text (""),
-          Text (""),
-          Text (toDisplayCurrent[count++], style: TextStyle(fontSize: 21, color: Colors.white)),
-          Icon(
-            getWeatherIcon(weather_code), 
-            color: Colors.blue,
-            size: 60,
-          ),
-          Text (""),
-          Text (""),
-          Row (
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.air,
-                color: Colors.blue,
-                size: 35,
-                ),
-              Text (toDisplayCurrent[count++], style: TextStyle(fontSize: 21, color: Colors.white,)),
-            ]
-          ),
+          for (var each in toDisplayCurrent)
+            Text(each, style: TextStyle(fontSize: 21, color: Colors.white),)
         ];
       }
+      int count = 0;
       return [
-        for (var each in toDisplayCurrent)
-          Text(each, style: TextStyle(fontSize: 21, color: Colors.white),)
+        Text (toDisplayCurrent[count++], style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold, color: Colors.blue)),
+        if (toDisplayCurrent.length == 6)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Icon(Icons.location_on, color: Colors.white54,),
+              Text (toDisplayCurrent[count++], style: TextStyle(fontSize: 19, color: Colors.white70)),],
+          ),
+        Text (toDisplayCurrent[count++], style: TextStyle(fontSize: 19, color: Colors.white70)),
+        Text (""), Text (""), Text (""),
+        Row (
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Icon(Icons.thermostat, color: Colors.orange, size: 60,),
+            Text (toDisplayCurrent[count++], style: TextStyle(fontSize: 37, color: Colors.orange,)),]
+        ),
+        Text (""), Text (""),
+        Text (toDisplayCurrent[count++], style: TextStyle(fontSize: 21, color: Colors.white)),
+        Icon(
+          getWeatherIcon(weather_code), 
+          color: Colors.blue,
+          size: 60,),
+        Text (""), Text (""),
+        Row (
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Icon(Icons.air, color: Colors.blue, size: 35,),
+            Text (toDisplayCurrent[count++], style: TextStyle(fontSize: 21, color: Colors.white,)),]
+        ),
       ];
     }
     return Column(
@@ -143,44 +124,86 @@ class CurrentPage extends StatelessWidget {
   }
 }
 
+
 class TodayPage extends StatelessWidget {
   const TodayPage({
     super.key,
     required this.toDisplay,
     required this.toDisplayToday,
+    required this.chartData
   });
 
   final String             toDisplay;
   final List<String> toDisplayToday;
-
+  final List<InHourData>? chartData;
+  
   @override
   Widget build(BuildContext context) {
-    List<Widget> toDisplayTodayPage()
-    {
-      int count = 0;
-      if (toDisplayToday.isEmpty)
-      {
+  List<Widget> toDisplayTodayPage()
+  {
+    int count = 0;
+    if (toDisplayToday.isEmpty) {
         return  [Column(
           mainAxisAlignment: MainAxisAlignment.center, // Center vertically
           crossAxisAlignment: CrossAxisAlignment.center, // horizental
-          children: [Text(toDisplay, style: TextStyle(fontSize: 21)),]
+          children: [Text(toDisplay, style: TextStyle(fontSize: 21, color: Colors.white70)),]
         )];
       }
-      // if (toDisplayToday.length >= 5)
-      // {
+      if (toDisplayToday.length < 4) {
         return [
-          Text (toDisplayToday[0], style: TextStyle(fontSize: 21)),
+          for (var each in toDisplayToday)
+            Text(each, style: TextStyle(fontSize: 21, color: Colors.white),)
         ];
-        // Text T1 = Text (toDisplayToday[0], style: TextStyle(fontSize: 21));
-      // }
-        // for (var each in toDisplayToday)
-          // Text(each, style: TextStyle(fontSize: 21))
-    }
+      }
+    return [
+      Text (toDisplayToday[count++], style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold, color: Colors.blue)),
+      if (toDisplayToday.length == 28)
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Icon(Icons.location_on, color: Colors.white54,),
+            Text (toDisplayToday[count++], style: TextStyle(fontSize: 19, color: Colors.white70)),],
+        ),
+      Text (toDisplayToday[count++], style: TextStyle(fontSize: 19, color: Colors.white70)),
+      Row (
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const Icon(Icons.today, color: Colors.orange, size: 19,),
+          Text (toDisplayToday[count++], style: TextStyle(fontSize: 19, color: Colors.orange,)),]
+      ),
+      SfCartesianChart(
+        title: ChartTitle(
+          text: 'Temperatur of Today'),
+        tooltipBehavior: TooltipBehavior(enable: true),
+        series: <ChartSeries>[
+          StackedLineSeries<InHourData, int>(
+            dataSource:   chartData!,
+            xValueMapper: (InHourData exp, _)=> exp.hour,
+            yValueMapper: (InHourData exp, _)=> exp.temperature_2m,
+            name: "Father",
+            markerSettings:  MarkerSettings(isVisible: true),
+            color: Colors.orange
+            ),
+        ],
+        primaryXAxis: NumericAxis(
+          axisLabelFormatter: (AxisLabelRenderDetails details) {
+            return ChartAxisLabel('${details.value.toString().padLeft(2, '0')}:00', TextStyle(color: Colors.white60));
+          },
+        ),
+        primaryYAxis: NumericAxis(
+          axisLabelFormatter: (AxisLabelRenderDetails details) {
+            return ChartAxisLabel('${details.value}°C', TextStyle(color: Colors.white60));
+          },
+        ),
+      )
+    ];
+  }
     return Column(
       mainAxisAlignment: MainAxisAlignment.center, // Center vertically
       crossAxisAlignment: CrossAxisAlignment.center, // horizental
-      children: toDisplayTodayPage(),
-    );
+      children: toDisplayTodayPage());
   }
 }
 

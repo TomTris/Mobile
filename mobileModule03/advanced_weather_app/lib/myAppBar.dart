@@ -48,7 +48,7 @@ class _MyAppBarState extends State<MyAppBar> {
         children: [
           TextSpan(
             text: resultText.substring(0, userText.length),
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)
           ),
           TextSpan(
             text: resultText.substring(userText.length),
@@ -61,20 +61,23 @@ class _MyAppBarState extends State<MyAppBar> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
+    return Column( children: [
       AppBar(
         title:  TextField(
+          style: TextStyle(color: Colors.white70),
           controller: widget.searchController,
           enabled: widget.isAnsweredLocation == 0 ? false : true ,
           decoration: InputDecoration(
             hintText: "Search City",
+            hintStyle: TextStyle(color: Colors.white38),
             icon: IconButton(
               onPressed: () async {
                 await widget.searchTheInput(0);
                 widget.myState();
               },
-              icon: Icon(Icons.search)
+              icon: Icon(
+                Icons.search,
+                color: Colors.white60,)
             )
           ),
           onSubmitted: (value) async {
@@ -91,7 +94,9 @@ class _MyAppBarState extends State<MyAppBar> {
           },
         ),
         actions: [
-          IconButton(onPressed: widget.isAnsweredLocation == 0 ? null : () async {
+          IconButton(
+            color: Colors.white54,
+            onPressed: widget.isAnsweredLocation == 0 ? null : () async {
             DateTime now = DateTime.now();
             if (widget.lastClick != null && now.difference(widget.lastClick!) < widget.waitingTime)
             {
@@ -109,27 +114,27 @@ class _MyAppBarState extends State<MyAppBar> {
             await widget.getCurrentLocation(1);
           },
           icon: Icon(Icons.location_on)),],
-        backgroundColor: Colors.blueGrey,
+        backgroundColor: Colors.black54,
       ),
       if (widget.citySuggestions.isNotEmpty)
       Expanded(
-        child: Container(
-          color: Colors.white,
           child: ListView.builder(
             itemCount: widget.citySuggestions.length,
             itemBuilder: (context, index) {
-              return ListTile(
-                title: highlight(widget.citySuggestions[index], widget.searchController.text),
-                onTap: () async {
-                  widget.searchController.text = widget.citySuggestions[index];
-                  await widget.searchTheInput(index);
-                  widget.myState();
-                },
+              return Container (
+                color: Colors.grey,
+                child: ListTile(
+                  title: highlight(widget.citySuggestions[index], widget.searchController.text),
+                  onTap: () async {
+                    widget.searchController.text = widget.citySuggestions[index];
+                    await widget.searchTheInput(index);
+                    widget.myState();
+                  },
+                ),
               );
             },
             
           ),
-        )
       )
     ],);
   }

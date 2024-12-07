@@ -23,7 +23,8 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(
+        title: 'Flutter Demo Home Page'),
     );
   }
 }
@@ -51,7 +52,7 @@ class _MyHomePageState extends State<MyHomePage> {
   DateTime?                     lastShowBar;
   Duration                      waitingTime = Duration(seconds: 4);
   int                         isAnsweredLocation = 0;
-
+  int                         weather_code = 0;
   void addAllDisplay(String str)
   {
     toDisplay = "${toDisplay}\n${str}";
@@ -220,10 +221,17 @@ class _MyHomePageState extends State<MyHomePage> {
     {
       today = data['time'].substring(0, 10);
       toDisplayCurrent = [
-        citySuggestions[index],
-        "Temperatur: ${data['temperature_2m']} °C",
-        "Weather: ${getWeatherDescription(data['weather_code'])}",
-        "Wind Speed: ${data['wind_speed_10m']} km/h"];
+        citySuggestions[index].substring(0, citySuggestions[index].indexOf(",")),
+        citySuggestions[index].substring(citySuggestions[index].indexOf(",") + 2),
+        "${data['temperature_2m']} °C",
+        "${getWeatherDescription(data['weather_code'])}",
+        "${data['wind_speed_10m']} km/h"];
+      try {
+        weather_code = (data['weather_code']);
+      }
+      catch (e) {
+        weather_code = -1;
+      }
       return (today);
     }
     _emptyDisplay("API request has Problem / Something wrong with API Answer/Parsing");
@@ -351,38 +359,62 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 3,
-      child: Scaffold(
-        body: Stack(children: [
-            TabBarView(
-              children: [
-                CurrentPage(toDisplay: toDisplay, toDisplayCurrent: toDisplayCurrent),
-                TodayPage(toDisplay: toDisplay, toDisplayToday: toDisplayToday),
-                WeekPage(toDisplay: toDisplay, toDisplayWeek: toDisplayWeek),
-              ],
+      child: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(image: AssetImage("assets/background.png"),
+                fit: BoxFit.cover,)
             ),
-          MyAppBar(
-            searchController: searchController,
-            searchTheInput: searchTheInput,
-            updateSuggestions: updateSuggestions,
-            getCurrentLocation: getCurrentLocation,
-            citySuggestions: citySuggestions,
-            debounce: debounce,
-            myState: myState,
-            lastClick: lastClick,
-            lastShowBar: lastShowBar,
-            waitingTime: waitingTime,
-            updateLastClick: updateLastClick,
-            updateLastShowBar: updateLastShowBar,
-            isAnsweredLocation: isAnsweredLocation,
           ),
-        ],),
-        bottomNavigationBar: const TabBar(
-          tabs: [
-            Tab(icon: Icon(Icons.access_time), text: 'Currently'),
-            Tab(icon: Icon(Icons.calendar_today), text: 'Today'),
-            Tab(icon: Icon(Icons.calendar_view_week), text: 'Weekly'),
-          ]
-        ),
+          Scaffold(
+            body: Container(
+              child: Stack (
+                children: [
+                  TabBarView(
+                    children: [
+                      CurrentPage(toDisplay: toDisplay, toDisplayCurrent: toDisplayCurrent, weather_code: weather_code),
+                      TodayPage(toDisplay: toDisplay, toDisplayToday: toDisplayToday),
+                      WeekPage(toDisplay: toDisplay, toDisplayWeek: toDisplayWeek),
+                    ],
+                  ),
+                  MyAppBar(
+                    searchController: searchController,
+                    searchTheInput: searchTheInput,
+                    updateSuggestions: updateSuggestions,
+                    getCurrentLocation: getCurrentLocation,
+                    citySuggestions: citySuggestions,
+                    debounce: debounce,
+                    myState: myState,
+                    lastClick: lastClick,
+                    lastShowBar: lastShowBar,
+                    waitingTime: waitingTime,
+                    updateLastClick: updateLastClick,
+                    updateLastShowBar: updateLastShowBar,
+                    isAnsweredLocation: isAnsweredLocation,
+                  ),
+                ],
+              ),
+            ),
+            bottomNavigationBar: Container (
+              color: Colors.transparent,
+              child: const Material(
+                color: Colors.transparent,
+                child: TabBar(
+                  indicatorColor: Colors.blue,
+                  labelColor: Colors.blue,
+                  unselectedLabelColor: Colors.blueGrey,
+                  tabs: [
+                    Tab(icon: Icon(Icons.access_time,),text: 'Currently'),
+                    Tab(icon: Icon(Icons.calendar_today), text: 'Today'),
+                    Tab(icon: Icon(Icons.calendar_view_week), text: 'Weekly'),
+                  ]
+                ),
+              ),
+            ),
+            backgroundColor: Colors.transparent,
+          ),
+        ],
       ),
     );
   }

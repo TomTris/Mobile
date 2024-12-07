@@ -269,7 +269,7 @@ class _MyHomePageState extends State<MyHomePage> {
       citySuggestions[index].substring(0, citySuggestions[index].indexOf(",")),
       citySuggestions[index].substring(citySuggestions[index].indexOf(",") + 2),
       today];
-    for (int cnt = 0; cnt <= 23; cnt++)
+    for (int cnt = 0; cnt <= 24; cnt++)
     {
       late String toAdd;
         toAdd = "${data['time'][cnt].substring(11)}," 
@@ -278,7 +278,7 @@ class _MyHomePageState extends State<MyHomePage> {
         "${data['wind_speed_10m'][cnt]}";
       toDisplayToday.add(toAdd);
     }
-    chartData = getChartData(toDisplayToday, toDisplayToday.length - 24);
+    chartData = getChartData(toDisplayToday, toDisplayToday.length - 25);
 
     toDisplayWeek = [citySuggestions[index], today, ""];
     for (int cntDay = 0; cntDay < 7; cntDay++)
@@ -381,8 +381,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 children: [
                   TabBarView(
                     children: [
-                      TodayPage(toDisplay: toDisplay, toDisplayToday: toDisplayToday, chartData: chartData),
                       CurrentPage(toDisplay: toDisplay, toDisplayCurrent: toDisplayCurrent, weather_code: weather_code),
+                      TodayPage(toDisplay: toDisplay, toDisplayToday: toDisplayToday, chartData: chartData),
                       WeekPage(toDisplay: toDisplay, toDisplayWeek: toDisplayWeek),
                     ],
                   ),
@@ -413,9 +413,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   labelColor: Colors.blue,
                   unselectedLabelColor: Colors.blueGrey,
                   tabs: [
-                    Tab(icon: Icon(Icons.calendar_today), text: 'Today'),
                     Tab(icon: Icon(Icons.access_time,),text: 'Currently'),
                     Tab(icon: Icon(Icons.calendar_view_week), text: 'Weekly'),
+                    Tab(icon: Icon(Icons.calendar_today), text: 'Today'),
                   ]
                 ),
               ),
@@ -434,7 +434,7 @@ List<InHourData> getChartData(List<String> toDisplayToday, int count) {
     late String temperature_2m;
     late String weather_code;
     late String wind_speed_10m;
-    for (int count2 = 0; count2 <= 23; count2++)
+    for (int count2 = 0; count2 <= 24; count2++)
     {
       hour = toDisplayToday[count + count2].substring(0, 2);
       toDisplayToday[count + count2] = toDisplayToday[count + count2].substring(6);
@@ -443,7 +443,10 @@ List<InHourData> getChartData(List<String> toDisplayToday, int count) {
       weather_code = toDisplayToday[count + count2].substring(0, toDisplayToday[count + count2].indexOf(","));
       toDisplayToday[count + count2] = toDisplayToday[count + count2].substring(weather_code.length + 1);
       wind_speed_10m = toDisplayToday[count + count2];
-      ChartData.add(InHourData(int.parse(hour), double.parse(temperature_2m), int.parse(weather_code), double.parse(wind_speed_10m)));
+      if (count2 == 24)
+        ChartData.add(InHourData(int.parse("24"), double.parse(temperature_2m), int.parse(weather_code), double.parse(wind_speed_10m)));
+      else
+        ChartData.add(InHourData(int.parse(hour), double.parse(temperature_2m), int.parse(weather_code), double.parse(wind_speed_10m)));
     }
     return (ChartData);
   }

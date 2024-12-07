@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'classes.dart';
+import 'functions.dart';
 
 IconData getWeatherIcon(int number) {
   switch (number) {
@@ -173,31 +174,71 @@ class TodayPage extends StatelessWidget {
           const Icon(Icons.today, color: Colors.orange, size: 19,),
           Text (toDisplayToday[count++], style: TextStyle(fontSize: 19, color: Colors.orange,)),]
       ),
+      Text(""),
       SfCartesianChart(
+        backgroundColor: const Color.fromARGB(70, 119, 87, 55),
         title: ChartTitle(
-          text: 'Temperatur of Today'),
+          text: 'Today temperatures',
+          textStyle: TextStyle(color: Colors.white70)),
         tooltipBehavior: TooltipBehavior(enable: true),
         series: <ChartSeries>[
           StackedLineSeries<InHourData, int>(
             dataSource:   chartData!,
             xValueMapper: (InHourData exp, _)=> exp.hour,
             yValueMapper: (InHourData exp, _)=> exp.temperature_2m,
-            name: "Father",
             markerSettings:  MarkerSettings(isVisible: true),
             color: Colors.orange
             ),
         ],
         primaryXAxis: NumericAxis(
           axisLabelFormatter: (AxisLabelRenderDetails details) {
-            return ChartAxisLabel('${details.value.toString().padLeft(2, '0')}:00', TextStyle(color: Colors.white60));
+            return ChartAxisLabel('${details.value.toString().padLeft(2, '0')}:00', TextStyle(color: Colors.white70));
           },
         ),
         primaryYAxis: NumericAxis(
           axisLabelFormatter: (AxisLabelRenderDetails details) {
-            return ChartAxisLabel('${details.value}°C', TextStyle(color: Colors.white60));
+            return ChartAxisLabel('${details.value}°C', TextStyle(color: Colors.white70));
           },
         ),
-      )
+      ),
+      Text(""),
+      Text(""),
+      Container(
+        height: 230,
+        color: const Color.fromARGB(70, 119, 87, 55),
+        child: ListView.builder(
+        itemCount: chartData!.length,
+        scrollDirection: Axis.horizontal,
+        itemBuilder: (context, index) {
+          return (
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text('${chartData![index].hour.toString().padLeft(2, '0')}:00', style:  TextStyle(color: Colors.white70),),
+                  Text(""),
+                  Text(getWeatherDescription(chartData![index].weather_code)!, style:  TextStyle(fontSize: 12, color: Colors.white70),),
+                  Icon(getWeatherIcon(chartData![index].weather_code), color: Colors.blue, size: 25,),
+                  Text(""),
+                  Text('${chartData![index].temperature_2m}°C', style: TextStyle(fontSize: 21, color: Colors.orange,)),
+                  Text(""),
+                  Row (
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.air, color: Colors.white, size: 18,),
+                      Text (' ${chartData![index].wind_speed_10m}km/h', style: TextStyle(fontSize: 15, color: Colors.white,)),]
+                  ),
+                ],
+              )
+            )
+          );
+        })
+      ),
+      Text(""),
+      Text("")
     ];
   }
     return Column(

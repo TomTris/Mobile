@@ -19,28 +19,33 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController passwordController = TextEditingController();
   bool isLoading = false;
 
-  void signUpUser() async {
-    String res = await AuthServicews().signUpUser(
+  @override
+  void dispose() {
+    super.dispose();
+    nameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+  }
+
+  void signUpUsers() async {
+    String res = await AuthServices().signUpUser(
       email: emailController.text,
       password: passwordController.text,
       name: nameController.text
     );
-    //if signup is success, user has been created and navigate to the next screen, otherwise show the error message
     if (res == "success"){
       setState(() {
-      isLoading = true;
+        isLoading = true;
       });
-      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => HomeScreen()));
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => HomeScreen()));
     }
-    else
-    {
+    else {
       setState(() {
         isLoading = false;
         showSnackbar(context, res);
       });
-      //show the error message
     }
-
   }
 
   @override
@@ -67,10 +72,11 @@ class _SignupScreenState extends State<SignupScreen> {
                 hintText: "Email",
                 icon: Icons.email),
               TextFieldInpute(
-                textEditingController: emailController,
+                textEditingController: passwordController,
                 hintText: "Enter your password",
-                icon: Icons.lock),
-              MyButton(onTab: signUpUser, text: "Sign up"),
+                icon: Icons.lock,
+                isPass: true,),
+              MyButton(onTab: signUpUsers, text: "Sign up"),
               SizedBox(height: height / 15,),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,

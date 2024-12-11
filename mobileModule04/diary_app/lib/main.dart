@@ -5,18 +5,16 @@ import 'firebase_options.dart';
 import 'package:diary_app/Login_Signup/Screen/login.dart';
 import 'package:flutter/material.dart';
 
-Future <void>  main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform
   );
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

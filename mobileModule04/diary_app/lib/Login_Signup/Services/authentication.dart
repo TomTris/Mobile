@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:diary_app/Login_Signup/Screen/login.dart';
+import 'package:diary_app/Login_Signup/Screen/snack_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:flutter/material.dart';
 class AuthServices {
   //for storing data in clould firestore
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -70,5 +72,11 @@ class AuthServices {
       print(e.toString());
       return (e.toString());
     }
+  }
+  Future<void> signOut2(res, context) async {
+    if (res == "success")
+      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => LoginScreen()));
+    else
+      showSnackbar(context, res);
   }
 }

@@ -66,7 +66,7 @@ class _SignupScreenState extends State<LoginScreen> {
               TextFieldInpute(textEditingController: passwordController,  hintText: "Enter your password", icon: Icons.lock, isPass:  true,),
               MyButton(onTab: LoginUsers, text: "Login"),
               ForgotPassword(),
-              SizedBox(height: height / 15,),
+              SizedBox(height: height / 30,),
               Row(
                 children: [
                   Expanded(child: Container(height:1, color: Colors.black)),
@@ -74,26 +74,49 @@ class _SignupScreenState extends State<LoginScreen> {
                   Expanded(child: Container(height: 1, color: Colors.black))
                 ],
               ),
+              Container(height: 30,),
               Padding(
-                padding: EdgeInsets.all(25),
+                padding: EdgeInsets.symmetric(horizontal: 25),
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey),
                   onPressed: () async {
-                    await FirebaseService().signInWithGoogle();
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => HomeScreen()));
+                    String res = await FirebaseService().signInWithGoogle();
+                    if (res == "success")
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => HomeScreen()));
+                    else
+                      showSnackbar(context, res);
                   },
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Image.network("https://png.pngtree.com/png-clipart/20230916/original/pngtree-google-internet-icon-vector-png-image_12256707.png", height: 35, fit: BoxFit.contain),
                       Container(width: 10,),
-                      Text("Continue with Google",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                          color: Colors.white)),
+                      Text("Continue with Google",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20,color: Colors.white)),
+                    ],
+                  )
+                )
+              ),
+              Padding(
+                padding: EdgeInsets.all(25),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey),
+                  onPressed: () async {
+                    String res = await FirebaseService().signInWithGitHub();
+                    if (res == "success")
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => HomeScreen()));
+                    else
+                      showSnackbar(context, res);
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.network("https://cdn-icons-png.flaticon.com/512/25/25231.png", height: 35, fit: BoxFit.contain),
+                      Container(width: 10,),
+                      Text("Continue with Github", style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20,color: Colors.white)),
                     ],
                   )
                 )

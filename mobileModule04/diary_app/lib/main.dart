@@ -1,4 +1,5 @@
-import 'package:diary_app/Login_Signup/Screen/home_screen.dart';
+import 'package:diary_app/DiaryPage/homepage.dart';
+import 'package:diary_app/DiaryPage/Page1/home_screen1.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';

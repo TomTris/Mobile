@@ -18,7 +18,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
       alignment: Alignment.centerRight,
       child: InkWell(
         onTap: () {
-          myDialogBox(context);
+          myDialogBoxForgotPassword(context);
         },
         child: Text("Forgot password?",
           style: TextStyle(
@@ -32,22 +32,18 @@ class _ForgotPasswordState extends State<ForgotPassword> {
   }
 }
 
-void myDialogBox(BuildContext context) {
+void myDialogBoxForgotPassword(BuildContext context) {
   TextEditingController emailController = TextEditingController();
   final auth = FirebaseAuth.instance;
 
   showDialog(
     context: context,
     builder: (BuildContext context) {
-      return Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30),
-        ),
+      return 
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30),),
         child: Container(
-          decoration: BoxDecoration(
-            color:  Colors.white,
-            borderRadius: BorderRadius.circular(30),
-          ),
+          decoration: BoxDecoration(color:  Colors.white,borderRadius: BorderRadius.circular(30),),
           padding: EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -55,12 +51,7 @@ void myDialogBox(BuildContext context) {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("Forgot Your Password",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 19,
-                  ),
-                ),
+                Text("Forgot Your Password",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 19,),),
                 IconButton(
                   onPressed: () {
                     Navigator.pop(context);
@@ -72,11 +63,7 @@ void myDialogBox(BuildContext context) {
             SizedBox(height: 20),
             TextField(
               controller: emailController,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: "Enter the Email",
-                hintText: "egabc@gmail.com"
-              ),
+              decoration: InputDecoration(border: OutlineInputBorder(),labelText: "Enter the Email",hintText: "egabc@gmail.com"),
             ),
             SizedBox(height: 20),
             ElevatedButton(
@@ -97,12 +84,8 @@ void myDialogBox(BuildContext context) {
                   print(e.toString());
                 }
               },
-              child: Text("Send",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: Colors.white
-                ),
+              child: Text( "Send",
+                style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16,color: Colors.white),
               )
             ),
           ],)
@@ -111,3 +94,65 @@ void myDialogBox(BuildContext context) {
     }
   );
 }
+
+// void myDialogBoxAddEntry(BuildContext context, _HomeScreenState superWidget) async {
+//   TextEditingController titleController = TextEditingController();
+//   TextEditingController contentController = TextEditingController();
+//   final auth = FirebaseAuth.instance;
+
+//   Future<void> getEntries() async {
+//     await FirebaseFirestoreService().getEntries();
+//   }
+  
+//   showDialog(
+//     context: context,
+//     builder: (BuildContext context) {
+//       return 
+//       Dialog(
+//         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30),),
+//         child: Container(
+//           decoration: BoxDecoration(color:  Colors.white,borderRadius: BorderRadius.circular(30),),
+//           padding: EdgeInsets.all(20),
+//           child: Column(
+//             mainAxisSize: MainAxisSize.min,
+//             children: [
+//             Row(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 Text("Forgot Your Password",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 19,),),
+//                 IconButton(
+//                   onPressed: () {
+//                     Navigator.pop(context);
+//                   },
+//                   icon: Icon(Icons.close)
+//                 ),
+//               ],
+//             ),
+//             SizedBox(height: 20),
+//             TextField(
+//               controller: titleController,
+//               decoration: InputDecoration(border: OutlineInputBorder(),labelText: "Enter the title",hintText: "Today, 11.12"),
+//             ),
+//             TextField(
+//               controller: contentController,
+//               decoration: InputDecoration(border: OutlineInputBorder(),labelText: "Enter the content",hintText: "I got many gifts"),
+//             ),
+//             SizedBox(height: 20),
+//             ElevatedButton(
+//               style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+//               onPressed: () async {
+//                 await FirebaseFirestoreService().addEntry(titleController.text, contentController.text);
+//                 await superWidget.getEntries();
+//                 await superWidget.mySetState();
+//                 Navigator.pop(context);
+//               },
+//               child: Text( "Create",
+//                 style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16,color: Colors.white),
+//               )
+//             ),
+//           ],)
+//         )
+//       );
+//     }
+//   );
+// }

@@ -1,6 +1,7 @@
+import 'package:diary_app/DiaryPage/Page1/home_screen1.dart';
+import 'package:diary_app/DiaryPage/homepage.dart';
 import 'package:diary_app/Login_Signup/Login_with_auth/google_auth.dart';
 import 'package:diary_app/Login_Signup/PasswordForgot/forgot_password.dart';
-import 'package:diary_app/Login_Signup/Screen/home_screen.dart';
 import 'package:diary_app/Login_Signup/Screen/snack_bar.dart';
 import 'package:diary_app/Login_Signup/Services/authentication.dart';
 import 'package:diary_app/Login_Signup/Widget/button.dart';
@@ -37,7 +38,7 @@ class _SignupScreenState extends State<LoginScreen> {
         isLoading = true;
       });
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const HomeScreen()));
+        MaterialPageRoute(builder: (context) => HomeScreen1()));
     }
     else {
       setState(() {

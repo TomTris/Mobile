@@ -53,7 +53,7 @@ class FirebaseService {
       GithubAuthProvider provider = GithubAuthProvider();
       provider.addScope('repo');
       provider.setCustomParameters({'allow_signup' : 'false'});
-      UserCredential user = await auth.signInWithPopup(provider);
+      await auth.signInWithPopup(provider);
       res = await FirebaseFirestoreService().afterLogin();
         if (res != "success")
           await AuthServices().signOut();

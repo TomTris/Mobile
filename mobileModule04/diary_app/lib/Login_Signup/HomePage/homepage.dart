@@ -52,7 +52,13 @@ class FirebaseFirestoreService {
   }
   Future<void> updateData(Map<String, dynamic> toUpdate) async {
     await FirebaseFirestore.instance.collection('users').doc(user.uid).update(toUpdate);
-    await FirebaseFirestore.instance.collection('users').doc(user.uid).update({'name': user.displayName == null ? "No name" : user.displayName});
+    await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
+      if (user.displayName != null)
+        'name': user.displayName,
+      if (user.email != null)
+        'email': user.email,
+      }
+    );
   }
   Future<void> deleteData(Map<String, dynamic> toSet) async {
     await FirebaseFirestore.instance.collection('users').doc(user.uid).delete();
@@ -66,9 +72,11 @@ class FirebaseFirestoreService {
   
   Future<void> getEntries() async {
     var dataInstance = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
-    var data = dataInstance.data()!;
-    GlobalData.entries = data['entries'];
-    var dataTemp = data['entries'];
+    if (dataInstance.data() == null)
+      return ;
+    var data = dataInstance.data();
+    GlobalData.entries = data!['entries'];
+    var dataTemp = GlobalData.entries;
     if (dataTemp == null)
       return ;
     var data2 = dataTemp.entries.toList();

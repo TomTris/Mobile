@@ -199,7 +199,6 @@ void showEntryBox(BuildContext context, superWidget, String? title, String? note
                   catch (e) {
                     showErrorDialog(context, e.toString());
                   };
-                  // superWidget();
                 },
               ),
             ],

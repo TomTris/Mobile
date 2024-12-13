@@ -3,42 +3,6 @@ import 'package:diary_app/snack_bar.dart';
 import 'package:diary_app/globalData.dart';
 import 'package:flutter/material.dart';
 
-Icon getIcon(String feeling)
-{
-  late IconData res;
-  var color;
-
-  switch (feeling)
-  {
-    case ('very_happy'):
-      res = Icons.sentiment_satisfied_alt;
-      color = Colors.orange;
-    case ('happy'):
-      res = Icons.sentiment_very_satisfied;
-      color = const Color.fromARGB(255, 191, 150, 15);
-    case ('sad'):
-      res = Icons.sentiment_dissatisfied;
-      color = Colors.grey;
-    case ('very_sad'):
-      res = Icons.sentiment_very_dissatisfied;
-      color = Colors.black;
-    case ('angry'):
-      res = Icons.face;
-      color = Colors.red;
-    case ('neutral'):
-      res = Icons.sentiment_neutral;
-      color = Colors.green;
-    default:
-      res = Icons.sentiment_satisfied_alt;
-      color = Colors.orange;
-  }
-  return (
-    Icon( res,
-      color: color,
-      size: 35,
-    ));
-}
-
 //'update' / 'create'
 void showEntryBox(BuildContext context, superWidget, String? title, String? noteId) {
   final TextEditingController _titleController = TextEditingController();
@@ -125,7 +89,7 @@ void showEntryBox(BuildContext context, superWidget, String? title, String? note
                             value: eachFeeling,
                             child: Row(
                               children: [
-                                Icon(getIcon(eachFeeling).icon, color: getIcon(eachFeeling).color),
+                                Icon(GlobalData.getIcon(eachFeeling).icon, color: GlobalData.getIcon(eachFeeling).color),
                                 SizedBox(width: 8),
                                 Text(eachFeeling),
                               ],

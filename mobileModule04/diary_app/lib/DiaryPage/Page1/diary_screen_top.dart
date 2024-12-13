@@ -1,4 +1,5 @@
 import 'package:diary_app/DiaryPage/Page1/showEntryBox.dart';
+import 'package:diary_app/globalData.dart';
 import 'package:flutter/material.dart';
 
 
@@ -51,42 +52,6 @@ class DiaryScreen1 extends StatelessWidget {
     }
   }
 
-  Icon getIcon(String feeling)
-  {
-    late IconData res;
-    var color;
-  
-    switch (feeling)
-    {
-      case ('very_happy'):
-        res = Icons.sentiment_satisfied_alt;
-        color = Colors.orange;
-      case ('happy'):
-        res = Icons.sentiment_very_satisfied;
-        color = const Color.fromARGB(255, 191, 150, 15);
-      case ('sad'):
-        res = Icons.sentiment_dissatisfied;
-        color = Colors.grey;
-      case ('very_sad'):
-        res = Icons.sentiment_very_dissatisfied;
-        color = Colors.black;
-      case ('angry'):
-        res = Icons.face;
-        color = Colors.red;
-      case ('neutral'):
-        res = Icons.sentiment_neutral;
-        color = Colors.green;
-      default:
-        res = Icons.sentiment_satisfied_alt;
-        color = Colors.orange;
-    }
-    return (
-      Icon( res,
-        color: color,
-        size: 35,
-      ));
-  }
-
   @override
   Widget build(BuildContext context) {
   if (title != null && title!.length > 44)
@@ -99,11 +64,11 @@ class DiaryScreen1 extends StatelessWidget {
     },
     child: Container(
       height: 100,
-      width: 800,
+      width: 750,
       padding: EdgeInsets.all(0),
       decoration: BoxDecoration(
         // color: Colors.white,
-        color: Colors.blueAccent.withOpacity(0.1),
+        color: Colors.blueAccent.withOpacity(0.7),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Container(
@@ -172,8 +137,8 @@ class DiaryScreen1 extends StatelessWidget {
                         SizedBox(width: 10),
                         // Icon
                         feeling != null
-                            ? getIcon(feeling!)
-                            : getIcon('very_happy'),
+                            ? GlobalData.getIcon(feeling!)
+                            : GlobalData.getIcon('very_happy'),
                       ],
                     ),
                   ),
@@ -214,42 +179,6 @@ class DiaryScreen2 extends StatelessWidget {
   String noteId;
   VoidCallback superState;
 
-  Icon getIcon(String feeling)
-  {
-    late IconData res;
-    var color;
-  
-    switch (feeling)
-    {
-      case ('very_happy'):
-        res = Icons.sentiment_satisfied_alt;
-        color = Colors.orange;
-      case ('happy'):
-        res = Icons.sentiment_very_satisfied;
-        color = const Color.fromARGB(255, 191, 150, 15);
-      case ('sad'):
-        res = Icons.sentiment_dissatisfied;
-        color = Colors.grey;
-      case ('very_sad'):
-        res = Icons.sentiment_very_dissatisfied;
-        color = Colors.black;
-      case ('angry'):
-        res = Icons.face;
-        color = Colors.red;
-      case ('neutral'):
-        res = Icons.sentiment_neutral;
-        color = Colors.green;
-      default:
-        res = Icons.sentiment_satisfied_alt;
-        color = Colors.orange;
-    }
-    return (
-      Icon( res,
-        color: color,
-        size: 35,
-      ));
-  }
-
   @override
   Widget build(BuildContext context) {
   return 
@@ -272,7 +201,7 @@ class DiaryScreen2 extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  getIcon(feeling),
+                  GlobalData.getIcon(feeling),
                   SizedBox(width: 10),
                   Text(title,
                     style: TextStyle(

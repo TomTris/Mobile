@@ -1,6 +1,5 @@
 import 'package:diary_app/Login_Signup/HomePage/homepage.dart';
 import 'package:diary_app/snack_bar.dart';
-import 'package:diary_app/Login_Signup/Services/authentication.dart';
 import 'package:diary_app/globalData.dart';
 import 'package:flutter/material.dart';
 
@@ -67,8 +66,7 @@ void showEntryBox(BuildContext context, superWidget, String? title) {
         builder: (context, setState) {
           return AlertDialog(
             title: Container(
-              width: 700,
-              height: 60,
+              width: 700,height: 60,
               padding: const EdgeInsets.symmetric(horizontal: 16), // Add horizontal padding
               decoration: BoxDecoration(
                 color: const Color.fromARGB(255, 227, 231, 233), // Light background color
@@ -98,30 +96,23 @@ void showEntryBox(BuildContext context, superWidget, String? title) {
               ),
             ),
             content: Container(
-              width: 700,
-              height: 600,
+              width: 700, height: 600,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   Container(
-                    width: 700,
-                    height: 50,
+                    width: 700, height: 50,
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Padding around the DropdownButton
                     decoration: BoxDecoration(
                       color: const Color.fromARGB(255, 227, 231, 233), // Light background color
                       borderRadius: BorderRadius.circular(8), // Rounded corners
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.3),
-                          spreadRadius: 1,
-                          blurRadius: 4,
-                          offset: Offset(0, 2), // Shadow position
-                        ),
-                      ],
+                      boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.3),spreadRadius: 1,blurRadius: 4,offset: Offset(0, 2),),],
                     ),
                     child: DropdownButton<String>(
                       value: feeling,
                       isExpanded: true, // Ensures the dropdown takes up the full width
+                      dropdownColor: Colors.white, // Customize the dropdown background color
+                      icon: Icon(Icons.arrow_downward), 
                       items: [
                         for (var eachFeeling in feelingList)
                           DropdownMenuItem(
@@ -136,47 +127,32 @@ void showEntryBox(BuildContext context, superWidget, String? title) {
                           ),
                       ],
                       onChanged: (String? newFeeling) {
-                        feeling = newFeeling!;
-                        superWidget();
+                        setState(() {
+                          if (newFeeling != null) {
+                            feeling = newFeeling;
+                          }
+                        });
                       },
-                      iconEnabledColor: Colors.black, // Set the color of the dropdown arrow
-                      iconSize: 30, // Set the size of the dropdown arrow
-                      underline: Container(), // Remove the default underline
                     ),
                   ),
                   SizedBox(height: 10,),
                   Container(
-                    padding: const EdgeInsets.all(16), // Add padding around the text field
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 227, 231, 233), // Light background color
-                      borderRadius: BorderRadius.circular(12), // Rounded corners
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.3),
-                          spreadRadius: 2,
-                          blurRadius: 4,
-                          offset: Offset(0, 2), // Shadow position
-                        ),
-                      ],
+                      color: const Color.fromARGB(255, 227, 231, 233),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.3),spreadRadius: 2,blurRadius: 4,offset: Offset(0, 2),),],
                     ),
                     child: TextField(
                       controller: _contentController,
                       decoration: InputDecoration(
                         labelText: 'Content',
-                        labelStyle: TextStyle(
-                          color: Colors.grey, // Light gray label color
-                        ),
+                        labelStyle: TextStyle(color: Colors.grey,),
                         border: InputBorder.none, // No border
                       ),
-                      maxLines: 20, // Allows multiple lines
-                      style: TextStyle(
-                        fontSize: 16, // Font size for the text
-                        color: Colors.black, // Text color
-                      ),
-                      onChanged: (value) {
-                        setState(() {
-                        });
-                      },
+                      maxLines: 20,
+                      style: TextStyle(fontSize: 16,color: Colors.black,),
+                      onChanged: (value) {setState(() {});},
                     ),
                   ),
                 ],
@@ -207,7 +183,7 @@ void showEntryBox(BuildContext context, superWidget, String? title) {
                 child: Text('Save'),
                 onPressed: () async{
                   try {
-                    await FirebaseFirestoreService().addEntry(_titleController.text, _contentController.text);
+                    await FirebaseFirestoreService().addEntry(_titleController.text, feeling, _contentController.text);
                     superWidget();
                   }
                   catch (e) {

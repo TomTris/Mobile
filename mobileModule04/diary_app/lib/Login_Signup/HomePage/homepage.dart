@@ -81,9 +81,9 @@ class FirebaseFirestoreService {
     });
     await getEntries();
   }
-  Future<void> addEntry(String entryName, String entryValue) async {
+  Future<void> addEntry(String entryName, String feeling, String entryValue) async {
     await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
-      'entries.$entryName': {'value': entryValue, 'last_update': getTimeFormat(), 'last_update2' : DateTime.now(),},
+      'entries.$entryName': {'feeling': feeling, 'value': entryValue, 'last_update': getTimeFormat(), 'last_update2' : DateTime.now(),},
     });
     await getEntries();
   }

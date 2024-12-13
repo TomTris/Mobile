@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:diary_app/Login_Signup/Screen/login.dart';
-import 'package:diary_app/Login_Signup/Screen/snack_bar.dart';
+import 'package:diary_app/snack_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 class AuthServices {

@@ -1,5 +1,4 @@
 import 'package:diary_app/DiaryPage/Page1/showEntryBox.dart';
-import 'package:diary_app/globalData.dart';
 import 'package:flutter/material.dart';
 
 
@@ -7,7 +6,6 @@ import 'package:flutter/material.dart';
 //else give dateTime, feeling and title
 //return 3 things: Time, icon and title
 // ignore: must_be_immutable
-
 class DiaryScreen1 extends StatelessWidget {
   DiaryScreen1({
     Key? key,
@@ -186,6 +184,97 @@ class DiaryScreen1 extends StatelessWidget {
                         fontSize: 19,
                         fontWeight: FontWeight.bold,
                       ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+  }
+}
+
+
+// ignore: must_be_immutable
+class DiaryScreen2 extends StatelessWidget {
+  DiaryScreen2({
+    Key? key,
+    required this.feeling,
+    required this.title,
+    required this.superState, 
+  }) :  super(key: key);
+  String feeling;
+  String title;
+  VoidCallback superState;
+
+  Icon getIcon(String feeling)
+  {
+    late IconData res;
+    var color;
+  
+    switch (feeling)
+    {
+      case ('very_happy'):
+        res = Icons.sentiment_satisfied_alt;
+        color = Colors.orange;
+      case ('happy'):
+        res = Icons.sentiment_very_satisfied;
+        color = const Color.fromARGB(255, 191, 150, 15);
+      case ('sad'):
+        res = Icons.sentiment_dissatisfied;
+        color = Colors.grey;
+      case ('very_sad'):
+        res = Icons.sentiment_very_dissatisfied;
+        color = Colors.black;
+      case ('angry'):
+        res = Icons.face;
+        color = Colors.red;
+      case ('neutral'):
+        res = Icons.sentiment_neutral;
+        color = Colors.green;
+      default:
+        res = Icons.sentiment_satisfied_alt;
+        color = Colors.orange;
+    }
+    return (
+      Icon( res,
+        color: color,
+        size: 35,
+      ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+  return 
+  GestureDetector(
+    onTap: () {
+      showEntryBox(context, superState, title);
+    },
+    child: Container(
+      height: 50,
+      width: 800,
+      padding: EdgeInsets.all(0),
+      decoration: BoxDecoration(
+        // color: Colors.white,
+        color: Colors.blueAccent.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Container(
+        child: Padding(
+          padding: const EdgeInsets.all(7),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  getIcon(feeling),
+                  SizedBox(width: 10),
+                  Text(title,
+                    style: TextStyle(
+                      fontSize: 19,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],

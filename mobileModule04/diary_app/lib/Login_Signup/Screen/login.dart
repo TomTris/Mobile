@@ -2,7 +2,7 @@ import 'package:diary_app/DiaryPage/Page1/home_screen1.dart';
 import 'package:diary_app/DiaryPage/homepage.dart';
 import 'package:diary_app/Login_Signup/Login_with_auth/google_auth.dart';
 import 'package:diary_app/Login_Signup/PasswordForgot/forgot_password.dart';
-import 'package:diary_app/Login_Signup/Screen/snack_bar.dart';
+import 'package:diary_app/snack_bar.dart';
 import 'package:diary_app/Login_Signup/Services/authentication.dart';
 import 'package:diary_app/Login_Signup/Widget/button.dart';
 import 'package:diary_app/Login_Signup/Widget/text_field.dart';
@@ -61,7 +61,7 @@ class _SignupScreenState extends State<LoginScreen> {
               SizedBox(
                 width: double.infinity,
                 height: height / 2.7,
-                child: Image.asset("images/login_img.jpg")
+                child: Image.asset("login_img.jpg")
               ),
               TextFieldInpute(textEditingController: emailController, hintText: "Email", icon: Icons.email),
               TextFieldInpute(textEditingController: passwordController,  hintText: "Enter your password", icon: Icons.lock, isPass:  true,),

@@ -1,6 +1,6 @@
 import 'package:diary_app/DiaryPage/homepage.dart';
 import 'package:diary_app/Login_Signup/Screen/login.dart';
-import 'package:diary_app/Login_Signup/Screen/snack_bar.dart';
+import 'package:diary_app/snack_bar.dart';
 import 'package:diary_app/Login_Signup/Services/authentication.dart';
 import 'package:diary_app/Login_Signup/Widget/button.dart';
 import 'package:diary_app/Login_Signup/Widget/text_field.dart';

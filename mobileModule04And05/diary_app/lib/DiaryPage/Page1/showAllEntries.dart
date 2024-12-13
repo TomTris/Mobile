@@ -40,7 +40,7 @@ class _ShowAllEntriesState extends State<ShowAllEntries> {
             SizedBox(height: 10),
             Container (
                 width: 900,
-                height: 300,
+                height: 700,
                 child: ListView.builder(
                 shrinkWrap: true,
                 itemCount: GlobalData.entriesSorted == null ? 0 : GlobalData.entriesSorted.length,

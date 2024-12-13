@@ -1,4 +1,5 @@
 import 'package:diary_app/DiaryPage/Page1/showEntryBox.dart';
+import 'package:diary_app/globalData.dart';
 import 'package:flutter/material.dart';
 
 
@@ -6,6 +7,7 @@ import 'package:flutter/material.dart';
 //else give dateTime, feeling and title
 //return 3 things: Time, icon and title
 // ignore: must_be_immutable
+
 class DiaryScreen1 extends StatelessWidget {
   DiaryScreen1({
     Key? key,
@@ -15,9 +17,8 @@ class DiaryScreen1 extends StatelessWidget {
     required this.superState, 
   }) :  super(key: key);
   String? dateTime;
-  String? feeling;
+  String? feeling = 'very_sad';
   String? title;
-  bool? isThereData;
   VoidCallback superState;
 
   String formatDate(String date, String whatTime) {
@@ -87,18 +88,14 @@ class DiaryScreen1 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (dateTime == null || feeling == null || title == null)
-      isThereData = false;
-    else
-    {
-      isThereData = true;
-      if (title != null && title!.length > 44)
-        title = title!.substring(0,40) + "...";
-    }
+  String? titleDisplay;
+  titleDisplay = title;
+  if (title != null && title!.length > 44)
+    titleDisplay = title!.substring(0,40) + "...";
   return 
   GestureDetector(
     onTap: () {
-      showEntryBox(context, superState); // Call the function b when the container is tapped
+      showEntryBox(context, superState, title);
     },
     child: Container(
       height: 100,
@@ -184,7 +181,7 @@ class DiaryScreen1 extends StatelessWidget {
                   // Title
                   Expanded(
                     child: Text(
-                      title != null ? title! : "Let's create a Note!",
+                      titleDisplay != null ? titleDisplay : "Let's create a Note!",
                       style: TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.bold,

@@ -6,6 +6,7 @@ import 'package:diary_app/Login_Signup/HomePage/homepage.dart';
 import 'package:diary_app/Login_Signup/Screen/snack_bar.dart';
 import 'package:diary_app/Login_Signup/Services/authentication.dart';
 import 'package:diary_app/Login_Signup/Widget/button.dart';
+import 'package:diary_app/globalData.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen1 extends StatefulWidget {
@@ -16,19 +17,11 @@ class HomeScreen1 extends StatefulWidget {
 }
 
 class _HomeScreen1State extends State<HomeScreen1> {
-  var entries;
-  var userData;
   int isLoading = 0;
   List<dynamic> keys = [];
   List<dynamic> contents = [];
-
-  String? dateTime1 = null;
-  String? dateTime2 = null;
-  String? feeling1 = null;
-  String? feeling2 = null;
-  String? title1 = "abc";
-  String? title2 = null;
   String profileName = "Default";
+
 
   @override
   void initState() {
@@ -38,17 +31,17 @@ class _HomeScreen1State extends State<HomeScreen1> {
   }
 
   Future<void> getEntries() async {
-    entries = await FirebaseFirestoreService().getEntries();
+    await FirebaseFirestoreService().getEntries();
     isLoading == isLoading + 1;
 
-    if (entries != null)
+    if (GlobalData.entries != null)
     {
       keys = [];
       contents = [];
-      for (int cnt = 0; cnt < entries.length; cnt++)
+      for (int cnt = 0; cnt < GlobalData.entries.length; cnt++)
       {
-        keys.add(entries.entries.toList()[cnt].key);
-        contents.add(entries.entries.toList()[cnt].value['value']);
+        keys.add(GlobalData.entries.entries.toList()[cnt].key);
+        contents.add(GlobalData.entries.entries.toList()[cnt].value['value']);
       }
     }
     setState(() {
@@ -58,25 +51,11 @@ class _HomeScreen1State extends State<HomeScreen1> {
   }
 
   Future<void> getUserData() async {
-    userData = await FirebaseFirestoreService().getUserData();
+    var userData = await FirebaseFirestoreService().getUserData();
     isLoading == isLoading + 1;
     profileName = userData['name'];
     setState(() {
     });
-    print(userData);
-  }
-
-
-  List<Widget>displayEntry() {
-    List<Widget> res = [];
-    if (entries == null)
-      res.add(Text("You don't have any Note"));
-    else {
-      for (var each in entries.entries) {
-        res.add(Text('${each.key}: ${each.value['value']}'));
-      }
-    }
-    return res;
   }
 
   void mySetState()
@@ -116,8 +95,13 @@ class _HomeScreen1State extends State<HomeScreen1> {
                     children: [
                       Text("Your 2 Last Diary Entries", style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold,color: Colors.blueAccent,),),
                       SizedBox(height: 5),
-                      DiaryScreen1(dateTime: dateTime1, feeling: feeling1, title: title1, superState: mySetState,),
-                      DiaryScreen1(superState: mySetState),
+                      (GlobalData.entriesSorted != null && GlobalData.entriesSorted.length >= 1) == true
+                      ? DiaryScreen1(title: GlobalData.entriesSorted?[0]?.key, dateTime: GlobalData.entriesSorted?[0]?.value?['last_update'], feeling: GlobalData.entriesSorted?[0]?.value?['feeling'], superState: mySetState)
+                      : DiaryScreen1(superState: mySetState),
+                      
+                      (GlobalData.entriesSorted != null && GlobalData.entriesSorted.length >= 2) == true
+                      ? DiaryScreen1(title: GlobalData.entriesSorted?[1]?.key, dateTime: GlobalData.entriesSorted?[1]?.value?['last_update'], feeling: GlobalData.entriesSorted?[1]?.value?['feeling'], superState: mySetState)
+                      : DiaryScreen1(superState: mySetState),
                     ],
                   ),
                 ),
@@ -189,7 +173,7 @@ class _HomeScreen1State extends State<HomeScreen1> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {showEntryBox(context, mySetState, 'New Note');},
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blueAccent,
                       shape: RoundedRectangleBorder(
@@ -199,20 +183,6 @@ class _HomeScreen1State extends State<HomeScreen1> {
                     ),
                     child: Text(
                       "New Entry",
-                      style: TextStyle(fontSize: 16, color: Colors.black),
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                    ),
-                    child: Text(
-                      "Show All Entries",
                       style: TextStyle(fontSize: 16, color: Colors.black),
                     ),
                   ),

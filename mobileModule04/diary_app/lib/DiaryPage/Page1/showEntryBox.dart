@@ -1,15 +1,65 @@
+import 'package:diary_app/Login_Signup/HomePage/homepage.dart';
+import 'package:diary_app/snack_bar.dart';
+import 'package:diary_app/Login_Signup/Services/authentication.dart';
+import 'package:diary_app/globalData.dart';
 import 'package:flutter/material.dart';
 
-void showEntryBox(BuildContext context, superWidget) {
-  String _dialogTitle = "Dialog Title";
-  String _dialogContent = "This is the dialog content.";
-  IconData _dialogIcon = Icons.info;
+Icon getIcon(String feeling)
+{
+  late IconData res;
+  var color;
 
+  switch (feeling)
+  {
+    case ('very_happy'):
+      res = Icons.sentiment_satisfied_alt;
+      color = Colors.orange;
+    case ('happy'):
+      res = Icons.sentiment_very_satisfied;
+      color = const Color.fromARGB(255, 191, 150, 15);
+    case ('sad'):
+      res = Icons.sentiment_dissatisfied;
+      color = Colors.grey;
+    case ('very_sad'):
+      res = Icons.sentiment_very_dissatisfied;
+      color = Colors.black;
+    case ('angry'):
+      res = Icons.face;
+      color = Colors.red;
+    case ('neutral'):
+      res = Icons.sentiment_neutral;
+      color = Colors.green;
+    default:
+      res = Icons.sentiment_satisfied_alt;
+      color = Colors.orange;
+  }
+  return (
+    Icon( res,
+      color: color,
+      size: 35,
+    ));
+}
+
+void showEntryBox(BuildContext context, superWidget, String? title) {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
+  String feeling = 'very_happy';
+  _titleController.text = 'New Title';
+  _contentController.text = 'Content';
+  if (title != null){
+    for (var each in GlobalData.entriesSorted){
+      String? feeling2 = feeling;
+      if (title == each.key){
+        _titleController.text = title;
+        _contentController.text = each.value['value'];
+        feeling2 = each?.value['feeling'];
+      }
+      if (feeling2 != null)
+        feeling = feeling2;
+    }
+  }
+  List<String> feelingList = ['very_happy', 'happy', 'sad', 'very_sad', 'angry', 'neutral'];
 
-  _contentController.text = _dialogContent;
-  _titleController.text = _dialogTitle;
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -45,11 +95,6 @@ void showEntryBox(BuildContext context, superWidget) {
                   fontSize: 20, // Larger font size for the title
                   color: Colors.black, // Text color
                 ),
-                onChanged: (value) {
-                  setState(() {
-                    _dialogTitle = value;
-                  });
-                },
               ),
             ),
             content: Container(
@@ -74,47 +119,25 @@ void showEntryBox(BuildContext context, superWidget) {
                         ),
                       ],
                     ),
-                    child: DropdownButton<IconData>(
-                      value: _dialogIcon,
+                    child: DropdownButton<String>(
+                      value: feeling,
                       isExpanded: true, // Ensures the dropdown takes up the full width
                       items: [
-                        DropdownMenuItem(
-                          value: Icons.info,
-                          child: Row(
-                            children: [
-                              Icon(Icons.info, color: Colors.blue),
-                              SizedBox(width: 8),
-                              Text("Info"),
-                            ],
+                        for (var eachFeeling in feelingList)
+                          DropdownMenuItem(
+                            value: eachFeeling,
+                            child: Row(
+                              children: [
+                                Icon(getIcon(eachFeeling).icon, color: getIcon(eachFeeling).color),
+                                SizedBox(width: 8),
+                                Text(eachFeeling),
+                              ],
+                            ),
                           ),
-                        ),
-                        DropdownMenuItem(
-                          value: Icons.warning,
-                          child: Row(
-                            children: [
-                              Icon(Icons.warning, color: Colors.orange),
-                              SizedBox(width: 8),
-                              Text("Warning"),
-                            ],
-                          ),
-                        ),
-                        DropdownMenuItem(
-                          value: Icons.check_circle,
-                          child: Row(
-                            children: [
-                              Icon(Icons.check_circle, color: Colors.green),
-                              SizedBox(width: 8),
-                              Text("Success"),
-                            ],
-                          ),
-                        ),
                       ],
-                      onChanged: (IconData? value) {
-                        setState(() {
-                          if (value != null) {
-                            _dialogIcon = value;
-                          }
-                        });
+                      onChanged: (String? newFeeling) {
+                        feeling = newFeeling!;
+                        superWidget();
                       },
                       iconEnabledColor: Colors.black, // Set the color of the dropdown arrow
                       iconSize: 30, // Set the size of the dropdown arrow
@@ -152,7 +175,6 @@ void showEntryBox(BuildContext context, superWidget) {
                       ),
                       onChanged: (value) {
                         setState(() {
-                          _dialogContent = value;
                         });
                       },
                     ),
@@ -163,9 +185,15 @@ void showEntryBox(BuildContext context, superWidget) {
             actions: <Widget>[
               TextButton(
                 child: Text('Delete'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  superWidget();
+                onPressed: () async{
+                  try {
+                    await FirebaseFirestoreService().deleteEntry(_titleController.text);
+                    Navigator.of(context).pop();
+                    superWidget();
+                  }
+                  catch (e) {
+                    showErrorDialog(context, e.toString());
+                  };
                 },
               ),
               TextButton(
@@ -177,11 +205,14 @@ void showEntryBox(BuildContext context, superWidget) {
               ),
               TextButton(
                 child: Text('Save'),
-                onPressed: () {
-                  setState(() {
-                    _dialogTitle = _titleController.text;
-                    _dialogContent = _contentController.text;
-                  });
+                onPressed: () async{
+                  try {
+                    await FirebaseFirestoreService().addEntry(_titleController.text, _contentController.text);
+                    superWidget();
+                  }
+                  catch (e) {
+                    showErrorDialog(context, e.toString());
+                  };
                   Navigator.of(context).pop();
                   superWidget();
                 },

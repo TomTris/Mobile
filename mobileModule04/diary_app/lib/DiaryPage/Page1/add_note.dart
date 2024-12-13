@@ -1,5 +1,5 @@
 import 'package:diary_app/Login_Signup/HomePage/homepage.dart';
-import 'package:diary_app/Login_Signup/Screen/snack_bar.dart';
+import 'package:diary_app/snack_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -56,7 +56,7 @@ Future<void> myDialogBoxAddEntry(BuildContext context, superWidget) async {
                 Navigator.pop(context);
                 }
                 catch (e) {
-                  showSnackbar(context, e.toString());
+                  showErrorDialog(context, e.toString());
                 }
               },
               child: Text( "Create",

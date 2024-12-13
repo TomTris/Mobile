@@ -1,4 +1,3 @@
-import 'package:diary_app/DiaryPage/Page1/add_note.dart';
 import 'package:diary_app/Login_Signup/HomePage/homepage.dart';
 import 'package:diary_app/Login_Signup/Services/authentication.dart';
 import 'package:diary_app/Login_Signup/Widget/button.dart';

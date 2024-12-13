@@ -12,11 +12,14 @@ class DiaryScreen1 extends StatelessWidget {
     String? this.dateTime,
     String? this.feeling,
     String? this.title,
+    String? this.noteId,
     required this.superState, 
   }) :  super(key: key);
   String? dateTime;
-  String? feeling = 'very_sad';
+  String? feeling;
   String? title;
+  String? noteId;
+
   VoidCallback superState;
 
   String formatDate(String date, String whatTime) {
@@ -86,14 +89,13 @@ class DiaryScreen1 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-  String? titleDisplay;
-  titleDisplay = title;
   if (title != null && title!.length > 44)
-    titleDisplay = title!.substring(0,40) + "...";
+    title = title!.substring(0,40) + "...";
   return 
   GestureDetector(
     onTap: () {
-      showEntryBox(context, superState, title);
+      showEntryBox(context, superState, title, noteId);
+      superState();
     },
     child: Container(
       height: 100,
@@ -179,7 +181,7 @@ class DiaryScreen1 extends StatelessWidget {
                   // Title
                   Expanded(
                     child: Text(
-                      titleDisplay != null ? titleDisplay : "Let's create a Note!",
+                      title != null ? title! : "Let's create a Note!",
                       style: TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.bold,
@@ -204,10 +206,12 @@ class DiaryScreen2 extends StatelessWidget {
     Key? key,
     required this.feeling,
     required this.title,
+    required this.noteId,
     required this.superState, 
   }) :  super(key: key);
   String feeling;
   String title;
+  String noteId;
   VoidCallback superState;
 
   Icon getIcon(String feeling)
@@ -251,14 +255,13 @@ class DiaryScreen2 extends StatelessWidget {
   return 
   GestureDetector(
     onTap: () {
-      showEntryBox(context, superState, title);
+      showEntryBox(context, superState, title, noteId);
     },
     child: Container(
       height: 50,
       width: 800,
       padding: EdgeInsets.all(0),
       decoration: BoxDecoration(
-        // color: Colors.white,
         color: Colors.blueAccent.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
       ),

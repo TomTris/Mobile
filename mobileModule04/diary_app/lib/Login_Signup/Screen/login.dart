@@ -1,6 +1,6 @@
 import 'package:diary_app/DiaryPage/Page1/home_screen1.dart';
 import 'package:diary_app/DiaryPage/homepage.dart';
-import 'package:diary_app/Login_Signup/Login_with_auth/google_auth.dart';
+import 'package:diary_app/Login_Signup/Login_with_auth/auth.dart';
 import 'package:diary_app/Login_Signup/PasswordForgot/forgot_password.dart';
 import 'package:diary_app/snack_bar.dart';
 import 'package:diary_app/Login_Signup/Services/authentication.dart';

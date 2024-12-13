@@ -39,22 +39,28 @@ Icon getIcon(String feeling)
     ));
 }
 
-void showEntryBox(BuildContext context, superWidget, String? title) {
+//'update' / 'create'
+void showEntryBox(BuildContext context, superWidget, String? title, String? noteId) {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
   String feeling = 'very_happy';
-  _titleController.text = 'New Title';
-  _contentController.text = 'Content';
-  if (title != null){
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _contentController.dispose();
+  }
+
+  _titleController.text = '';
+  _contentController.text = '';
+  if (noteId != null){
     for (var each in GlobalData.entriesSorted){
-      String? feeling2 = feeling;
-      if (title == each.key){
-        _titleController.text = title;
-        _contentController.text = each.value['value'];
-        feeling2 = each?.value['feeling'];
+      if (noteId == each.key){
+        _titleController.text = each.value['title'];
+        _contentController.text = each.value['content'];
+        feeling = each.value['feeling'];
+        break ;
       }
-      if (feeling2 != null)
-        feeling = feeling2;
     }
   }
   List<String> feelingList = ['very_happy', 'happy', 'sad', 'very_sad', 'angry', 'neutral'];
@@ -159,11 +165,12 @@ void showEntryBox(BuildContext context, superWidget, String? title) {
               ),
             ),
             actions: <Widget>[
+              if (noteId != null)
               TextButton(
                 child: Text('Delete'),
                 onPressed: () async{
                   try {
-                    await FirebaseFirestoreService().deleteEntry(_titleController.text);
+                    await FirebaseFirestoreService().deleteEntry(noteId);
                     Navigator.of(context).pop();
                     superWidget();
                   }
@@ -180,17 +187,19 @@ void showEntryBox(BuildContext context, superWidget, String? title) {
                 },
               ),
               TextButton(
-                child: Text('Save'),
+                child: noteId == null ? Text('Create') : Text('Update'),
                 onPressed: () async{
                   try {
-                    await FirebaseFirestoreService().addEntry(_titleController.text, feeling, _contentController.text);
+                    Navigator.of(context).pop();
+                    noteId == null
+                    ? await FirebaseFirestoreService().addEntry(_titleController.text, feeling, _contentController.text)
+                    : await FirebaseFirestoreService().updateEntry(noteId, _titleController.text, feeling, _contentController.text);
                     superWidget();
                   }
                   catch (e) {
                     showErrorDialog(context, e.toString());
                   };
-                  Navigator.of(context).pop();
-                  superWidget();
+                  // superWidget();
                 },
               ),
             ],

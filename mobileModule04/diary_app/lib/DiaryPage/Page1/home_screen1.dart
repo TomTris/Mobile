@@ -68,11 +68,11 @@ class _HomeScreen1State extends State<HomeScreen1> {
                       Text("Your 2 Last Diary Entries", style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold,color: Colors.blueAccent,),),
                       SizedBox(height: 5),
                       (GlobalData.entriesSorted != null && GlobalData.entriesSorted.length >= 1) == true
-                      ? DiaryScreen1(title: GlobalData.entriesSorted?[0]?.key, dateTime: GlobalData.entriesSorted?[0]?.value?['last_update'], feeling: GlobalData.entriesSorted?[0]?.value?['feeling'], superState: mySetState)
+                      ? DiaryScreen1(noteId: GlobalData.entriesSorted[0].key, title: GlobalData.entriesSorted[0].value['title'], dateTime: GlobalData.entriesSorted[0].value['last_update'], feeling: GlobalData.entriesSorted[0].value['feeling'], superState: mySetState)
                       : DiaryScreen1(superState: mySetState),
                       
                       (GlobalData.entriesSorted != null && GlobalData.entriesSorted.length >= 2) == true
-                      ? DiaryScreen1(title: GlobalData.entriesSorted?[1]?.key, dateTime: GlobalData.entriesSorted?[1]?.value?['last_update'], feeling: GlobalData.entriesSorted?[1]?.value?['feeling'], superState: mySetState)
+                      ? DiaryScreen1(noteId: GlobalData.entriesSorted[1].key, title: GlobalData.entriesSorted[1].value['title'], dateTime: GlobalData.entriesSorted[1].value['last_update'], feeling: GlobalData.entriesSorted[1].value['feeling'], superState: mySetState)
                       : DiaryScreen1(superState: mySetState),
                     ],
                   ),
@@ -119,8 +119,9 @@ class _HomeScreen1State extends State<HomeScreen1> {
                             GlobalData.entriesSorted == null
                             ? Text("")
                             :DiaryScreen2(
-                              feeling: GlobalData.entriesSorted[0].value['feeling'],
-                              title: GlobalData.entriesSorted[index].key,
+                              noteId: GlobalData.entriesSorted[index].key,
+                              feeling: GlobalData.entriesSorted[index].value['feeling'],
+                              title: GlobalData.entriesSorted[index].value['title'],
                               superState: mySetState),
                           );
                         },
@@ -140,7 +141,7 @@ class _HomeScreen1State extends State<HomeScreen1> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   ElevatedButton(
-                    onPressed: () {showEntryBox(context, mySetState, null);},
+                    onPressed: () {showEntryBox(context, mySetState, null, null);},
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blueAccent,
                       shape: RoundedRectangleBorder(

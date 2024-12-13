@@ -23,7 +23,7 @@ class FirebaseService {
   }
 
   Future<String> signInWithGoogle() async {
-    res = "success";
+    res = "Login process not ok";
     try {
       final GoogleSignInAccount? googleSignInAccount = await googleSignIn.signIn();
       if (googleSignInAccount != null) {

@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class FirebaseFirestoreService {
-  // FirebaseFirestore FirebaseFirestore.instance = FirebaseFirestore.instance;
   User user = FirebaseAuth.instance.currentUser!;
 
   Future<String> afterLogin() async {
@@ -12,7 +11,7 @@ class FirebaseFirestoreService {
         QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('users').get();
         for (var doc in querySnapshot.docs) {
           if (user.uid == doc['uid']) {
-            await updateData({'last_login': getTimeFormat()});
+            await updateData({'last_login': getTimeFormat(DateTime.now())});
             return "success";
           }
         };
@@ -24,9 +23,8 @@ class FirebaseFirestoreService {
       }
   }
 
-  String getTimeFormat(){
-    DateTime now = DateTime.now();
-    DateTime nowUtc = DateTime.now().toUtc();
+  String getTimeFormat(DateTime now){
+    DateTime nowUtc = now.toUtc();
     int timeZoneOffset = now.timeZoneOffset.inHours;
     String nowTime = "${DateFormat('dd/MM/yyyy HH:mm:ss').format(nowUtc)} UTC${timeZoneOffset >= 0 ? '+' : ''}$timeZoneOffset";
 
@@ -34,16 +32,19 @@ class FirebaseFirestoreService {
   }
   
   Future<void> addData() async {
+    DateTime now = DateTime.now();
     await FirebaseFirestore.instance.collection('users').doc(user.uid).set(
       {
-      'name': user.displayName,
+      'name': user.displayName == null ? "No name" : user.displayName,
       'email': user.email,
       'uid': user.uid,
-      'last_login_UTC': getTimeFormat(),
-      'last_login': DateTime.now(),
+      'last_login_UTC': getTimeFormat(now),
+      'last_login': now,
       'entries' : null,
-      'felling_of_the_day' : 'happy',
     });
+    // Reason: it seems like, it takes a bit time, until firebase get request and make changes into the database
+    // without this line, when user logs in, sometimes data isn't initialized yet and it shows error.
+    await Future.delayed(Duration(seconds: 1));
   }
 
   Future<void> setData(Map<String, dynamic> toSet) async {
@@ -51,6 +52,7 @@ class FirebaseFirestoreService {
   }
   Future<void> updateData(Map<String, dynamic> toUpdate) async {
     await FirebaseFirestore.instance.collection('users').doc(user.uid).update(toUpdate);
+    await FirebaseFirestore.instance.collection('users').doc(user.uid).update({'name': user.displayName == null ? "No name" : user.displayName});
   }
   Future<void> deleteData(Map<String, dynamic> toSet) async {
     await FirebaseFirestore.instance.collection('users').doc(user.uid).delete();
@@ -62,12 +64,14 @@ class FirebaseFirestoreService {
     return (data);
   }
   
-  Future<dynamic> getEntries() async {
+  Future<void> getEntries() async {
     var dataInstance = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
     var data = dataInstance.data()!;
     GlobalData.entries = data['entries'];
-    data = data['entries'];
-    var data2 = data.entries.toList();
+    var dataTemp = data['entries'];
+    if (dataTemp == null)
+      return ;
+    var data2 = dataTemp.entries.toList();
     data2.sort((a, b) {
       Timestamp timestampA = a.value['last_update2'];
       Timestamp timestampB = b.value['last_update2'];
@@ -75,25 +79,37 @@ class FirebaseFirestoreService {
     });
     GlobalData.entriesSorted = data2;
   }
-  Future<void> deleteEntry(String entryName) async {
+  Future<void> deleteEntry(String noteId) async {
     await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
-      'entries.$entryName': FieldValue.delete(),
+      'entries.$noteId': FieldValue.delete(),
     });
     await getEntries();
   }
-  Future<void> addEntry(String entryName, String feeling, String entryValue) async {
+  Future<void> addEntry(String title, String feeling, String content) async {
+    DateTime now = DateTime.now();
+    String nowString = now.year.toString() + now.day.toString() + now.month.toString() + now.hour.toString() + now.minute.toString() + now.second.toString() + now.millisecond.toString() + now.microsecond.toString();
     await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
-      'entries.$entryName': {'feeling': feeling, 'value': entryValue, 'last_update': getTimeFormat(), 'last_update2' : DateTime.now(),},
+      'entries.${nowString}': {'title': title, 'feeling': feeling, 'content': content, 'last_update': getTimeFormat(now), 'last_update2' : now,},
     });
     await getEntries();
   }
-  Future<void> updateEntry(String entryName, String entryValue) async {
-    print(2);
-    if (GlobalData.entries.entries['$entryName'] == null)
+  Future<void> updateEntry(String noteId, String title, String feeling, String content) async {
+    int index = -1;
+    int found = 0;
+    for (var each in GlobalData.entriesSorted) {
+      index += 1;
+      if (each.key == noteId) {
+        found = 1;
+        break ;
+      }
+    }
+    if (found == 0)
       throw Exception("this can't get updated because it doesn't exist yet");
+    DateTime now = DateTime.now();
     await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
-      'entries.$entryName': {'value': entryValue, 'last_update': getTimeFormat()},
+      'entries.${noteId}': {'title': title, 'feeling': feeling, 'content': content, 'last_update': getTimeFormat(now), 'last_update2' : now,},
     });
     await getEntries();
   }
 }
+

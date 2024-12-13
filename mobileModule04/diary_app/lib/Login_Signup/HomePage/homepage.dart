@@ -3,19 +3,19 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class FirebaseFirestoreService {
-  FirebaseFirestore storage = FirebaseFirestore.instance;
+  // FirebaseFirestore FirebaseFirestore.instance = FirebaseFirestore.instance;
   User user = FirebaseAuth.instance.currentUser!;
 
   Future<String> afterLogin() async {
       try {
-        QuerySnapshot querySnapshot = await storage.collection('users').get();
+        QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('users').get();
         for (var doc in querySnapshot.docs) {
           if (user.uid == doc['uid']) {
-            await FirebaseFirestoreService().updateData(doc.id, {'last_login': getTimeFormat()});
+            await updateData({'last_login': getTimeFormat()});
             return "success";
           }
         };
-        await FirebaseFirestoreService().addData();
+        await addData();
         return "success";
       }
       catch (e) {
@@ -33,7 +33,8 @@ class FirebaseFirestoreService {
   }
   
   Future<void> addData() async {
-    await storage.collection('users').add({
+    await FirebaseFirestore.instance.collection('users').doc(user.uid).set(
+      {
       'name': user.displayName,
       'email': user.email,
       'uid': user.uid,
@@ -42,42 +43,49 @@ class FirebaseFirestoreService {
       'felling_of_the_day' : 'happy',
     });
   }
-  Future<void> setData(docId, Map<String, dynamic> toSet) async {
-    await storage.collection('users').doc(docId).set(toSet);
+
+  Future<void> setData(Map<String, dynamic> toSet) async {
+    await FirebaseFirestore.instance.collection('users').doc(user.uid).set(toSet);
   }
-  Future<void> updateData(docId, Map<String, dynamic> toUpdate) async {
-    await storage.collection('users').doc(docId).update(toUpdate);
+  Future<void> updateData(Map<String, dynamic> toUpdate) async {
+    await FirebaseFirestore.instance.collection('users').doc(user.uid).update(toUpdate);
   }
-  Future<void> deleteData(docId, Map<String, dynamic> toSet) async {
-    await storage.collection('users').doc(docId).delete();
+  Future<void> deleteData(Map<String, dynamic> toSet) async {
+    await FirebaseFirestore.instance.collection('users').doc(user.uid).delete();
   }
 
+  Future<dynamic> getUserData() async {
+    var dataInstance = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+    var data = dataInstance.data()!;
+    return (data);
+  }
+  
   Future<dynamic> getEntries() async {
-    String docId = await getDocId();
-    var dataInstance = await storage.collection('users').doc(docId).get();
+    var dataInstance = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
     var data = dataInstance.data()!;
     var entries = data['entries'];
     return (entries);
   }
   Future<void> deleteEntry(String entryName) async {
-    String docId = await getDocId();
-    await storage.collection('users').doc(docId).update({
+    await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
       'entries.$entryName': FieldValue.delete(),
     });
   }
   Future<void> addEntry(String entryName, String entryValue) async {
-    String docId = await getDocId();
-    await storage.collection('users').doc(docId).update({
+    var entries = await getEntries();
+    if (entries != null && entries.entries.any((entry) => entry.key == '$entryName') != null)
+      throw Exception('this Title already exists');
+    await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
       'entries.$entryName': {'value': entryValue, 'last_update': getTimeFormat()},
     });
   }
-  Future<String> getDocId() async {
-    QuerySnapshot querySnapshot = await storage.collection('users').get();
-      for (var doc in querySnapshot.docs) {
-        if (user.uid == doc['uid'])
-          return (doc.id);
-      }
-      return ("No DocId Avaiable");
+  Future<void> updateEntry(String entryName, String entryValue) async {
+    var entries = await getEntries();
+    if (entries.entries['$entryName'] == null)
+      throw Exception("this can't get updated because it doesn't exist yet");
+    await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
+      'entries.$entryName': {'value': entryValue, 'last_update': getTimeFormat()},
+    });
   }
   Future<void> printData() async {
     var data = await getEntries();

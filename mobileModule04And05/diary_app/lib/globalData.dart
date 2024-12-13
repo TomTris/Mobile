@@ -25,7 +25,7 @@ class GlobalData {
         count += 1;
       }
     }
-    return (count / entriesSorted.length).toInt() * 100;
+    return (count * 100 / entriesSorted.length).toInt();
   }
   
   static Icon getIcon(String feeling)

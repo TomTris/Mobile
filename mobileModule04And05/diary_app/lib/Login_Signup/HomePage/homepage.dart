@@ -102,10 +102,8 @@ class FirebaseFirestoreService {
     await getEntries();
   }
   Future<void> updateEntry(String noteId, String title, String feeling, String content) async {
-    int index = -1;
     int found = 0;
     for (var each in GlobalData.entriesSorted) {
-      index += 1;
       if (each.key == noteId) {
         found = 1;
         break ;
